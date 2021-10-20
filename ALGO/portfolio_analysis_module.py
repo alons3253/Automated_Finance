@@ -5,10 +5,10 @@ import time
 import os
 
 from ALGO.stock_data_module import stockDataEngine, spy_returns
-from ALGO.bond_yield_fetch_module import treasuryYields
+from ALGO.bond_yield_fetch_module import bondYields
 from ALGO.excel_formatting_module import ExcelFormatting
 
-
+# currently broken
 def data_to_excel(data, sheet_name):
     cwd = os.getcwd()
     path = cwd + r"\Portfolio-Analysis\Portfolio Data.xlsx"
@@ -17,7 +17,7 @@ def data_to_excel(data, sheet_name):
     with pd.ExcelWriter(path) as writer:
         metrics.to_excel(writer, sheet_name=sheet_name)
 
-    formatter = ExcelFormatting(file_path=path, worksheet_name=sheet_name)
+    formatter = ExcelFormatting(file_path=path)
     formatter.formatting()
 
     print("Data table of portfolio performance metrics has been exported to Microsoft Excel")
@@ -365,7 +365,7 @@ class portfolioAnalysis:
         # print("Total Net Profit:", todays_profit_and_loss)
 
         pd.options.display.float_format = '{:.0f}'.format
-        data_engine = stockDataEngine(self.stock_tickers)
+        data_engine = stockDataEngine(self.stock_tickers, {})
         init_data = data_engine.initial_quote_data_fetch()
         quote_data = data_engine.quote_data_processor()
         spyreturn = float(spy_returns())

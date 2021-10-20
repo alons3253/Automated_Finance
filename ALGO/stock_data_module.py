@@ -56,21 +56,21 @@ class stockDataEngine:
                         elem = round(dividend, 4)
                     quote["dividend"] = elem
                 if i == 2:
-                    quote["day's range"] = elem
+                    quote["day's range"] = elem if not elem == 'N/A' else elem
                 if i == 3:
-                    quote["52 week range"] = elem
+                    quote["52 week range"] = elem if not elem == 'N/A' else elem
                 if i == 4:
-                    quote["previous close"] = float(elem)
+                    quote["previous close"] = float(elem) if not elem == 'N/A' else elem
                 if i == 5:
-                    quote["open"] = float(elem)
+                    quote["open"] = float(elem) if not elem == 'N/A' else elem
                 if i == 6:
                     quote["P/E ratio"] = float(elem) if not elem == 'N/A' else elem
                 if i == 7:
-                    quote["average volume"] = int(elem)
+                    quote["average volume"] = int(elem) if not elem == 'N/A' else elem
                 if i == 8:
-                    quote["one year target"] = float(elem)
+                    quote["one year target"] = float(elem) if not elem == 'N/A' else elem
                 if i == 9:
-                    quote["beta"] = float(elem)
+                    quote["beta"] = float(elem) if not elem == 'N/A' else elem
                     quote["time"] = dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                     initial_data[stock].append(quote)
                     continue
@@ -86,11 +86,11 @@ class stockDataEngine:
             for i in range(length_of_information):
                 elem = scraped_stock_info[i].replace(',', '')
                 if i == 1:
-                    quote['current price'] = float(elem)
+                    quote['current price'] = float(elem) if not elem == 'N/A' else elem
                 if i == 2:
                     quote['indicator'] = elem
                 if i == 3:
-                    quote['volume'] = int(elem)
+                    quote['volume'] = int(elem) if not elem == 'N/A' else elem
                 if i == 4:
                     quote['bid'] = elem
                 if i == 5:

@@ -1,8 +1,6 @@
 # updated to full functionality
 
 from win10toast import ToastNotifier
-import alpaca_trade_api as trade_api
-from alpaca_trade_api.stream import URL
 import concurrent.futures
 import datetime as dt
 import time
@@ -15,12 +13,13 @@ from ALGO.stock_init_fetch_module import APIbootstrap
 from ALGO.websocket_core_module import WebsocketBootStrapper
 from ALGO.stock_data_module import stockDataEngine
 from ALGO.technical_indicators_core import technicalIndicators
-from ALGO.bond_yield_fetch_module import treasuryYields
+from ALGO.bond_yield_fetch_module import bondYields
 from ALGO.options_module import Options
 from ALGO.portfolio_analysis_module import portfolioAnalysis
 from ALGO.file_handling_module import filePruning
 from ALGO.stock_and_option_analysis_module import stockAnalysis
 from ALGO.db_initializer import databaseInitializer
+from ALGO.purchasing_analysis import purchasingAnalysis
 
 
 # minor date functions
@@ -30,37 +29,6 @@ def suffix(d):
 
 def custom_strftime(time_format, t):
     return t.strftime(time_format).replace('{S}', str(t.day) + suffix(t.day))
-
-
-def alpaca_bootstrapper():
-    # Alpaca API Bootstrap
-    alpaca_api = None
-    try:
-        with open("alpaca_keys.txt") as f:
-            keys = f.readlines()
-            key = keys[0].rstrip('\n')
-            sec_key = keys[1].rstrip('\n')
-        alpaca_api = trade_api.REST(key, sec_key, URL("https://paper-api.alpaca.markets"), api_version='v2')
-        alpaca_api.get_account()
-    except:
-        while True:
-            logging.warning("Alpaca account credentials were not found!")
-            logging.warning("Please input the Alpaca API key:")
-            key = str(input())
-            logging.warning("Please input the Alpaca API security key:")
-            sec_key = str(input())
-            try:
-                alpaca_api = trade_api.REST(key, sec_key, URL("https://paper-api.alpaca.markets"), api_version='v2')
-                alpaca_api.get_account()
-            except Exception:
-                continue
-            with open("alpaca_keys.txt", 'w') as f:
-                f.write(key + '\n')
-                f.write(sec_key + '\n')
-                break
-
-    logging.debug("A valid Alpaca trading account was found")
-    return alpaca_api
 
 
 def time_initialization():
@@ -90,6 +58,7 @@ def time_initialization():
     return mkt_close, market_closed_boolean
 
 
+# disabled for now
 def check_for_market_close():
     if not clock.is_open:
         raise Exception('The market is currently closed')
@@ -114,12 +83,8 @@ def websocket_boot():
 # working
 def data_thread_marshaller():
     with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
-        stock_quotes = executor.submit(stock_data_bootstrap.quote_data_processor).result()
-        technical_indicators = executor.submit(finnhub_tech_bootstrap.tech_indicator).result()
-
-    print(stock_quotes)
-    print(technical_indicators)
-    print('------------------------------------------------------------------')
+        executor.submit(stock_data_bootstrap.quote_data_processor).result()
+        executor.submit(finnhub_tech_bootstrap.tech_indicator).result()
 
 
 # working
@@ -128,25 +93,30 @@ def initial_fetch():
     with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
         initial_quote_fetch = executor.submit(stock_data_bootstrap.initial_quote_data_fetch).result()
         stock_quotes = executor.submit(stock_data_bootstrap.quote_data_processor).result()
-        initial_bond_fetch = executor.submit(bond_bootstrap.treasury_bond_yields).result()
+        treasury_yields = executor.submit(bond_bootstrap.treasury_bond_yields).result()
+        libor_yields = executor.submit(bond_bootstrap.LIBOR_yields).result()
         ti_fetch = executor.submit(finnhub_tech_bootstrap.tech_indicator).result()
-    print(initial_bond_fetch)
+
+    print("T-Bond Yields:", treasury_yields)
+    print("LIBOR Yields:", libor_yields)
     print(initial_quote_fetch)
     print(stock_quotes)
     print(ti_fetch)
 
     try:
         options_bootstrapper = Options(stock_tickers=stock_tickers, initial_data=initial_quote_fetch,
-                                       quote_data=stock_quotes, rate=initial_bond_fetch)
+                                       quote_data=stock_quotes, rate=libor_yields)
         options_pricing = options_bootstrapper.thread_marshaller()
 
         return options_pricing
-    except Exception as e:
-        logging.error("Exception occurred", exc_info=True)
+    except Exception as error:
+        logging.error(f"Exception occurred {error}", exc_info=True)
 
 
 # WIP
 def initial_analysis(options_pricing):
+    # note as of 10/20, i am ignoring the options for now while i rebuild the analysis and trading modules
+
     """
     for the initial analysis function, we want to take a look at the options we just gathered and take a note
     of a couple of things, namely how large is the open interest?
@@ -164,40 +134,38 @@ def initial_analysis(options_pricing):
 
 # needs fixing
 def cleanup():
-    # get rid of elements in lists that are dated 5 minutes and beyond to save memory
-    # this is a temporary solution, i want to store all information instead of deleting it but not sure yet how i want
-    # to do this in a fast and low computational cost method
-    if (time.time() - program_start) > 300:
-        print('Data Culling')
-        for STOCK in stock_tickers:
-            for p, it1 in enumerate(trade_data[STOCK].copy()):
-                for key, value in it1.items():
-                    if key == 'time':
-                        if dt.datetime.strptime(value, "%Y-%m-%d %H:%M:%S.%f") < dt.datetime.now() - dt.timedelta(
-                                seconds=300):
-                            trade_data[STOCK].remove(it1)
-            for p, it2 in enumerate(stock_quote_data[STOCK].copy()):
-                for key, value in it2.items():
-                    if key == 'time':
-                        if dt.datetime.strptime(value, "%Y-%m-%d %H:%M:%S") < dt.datetime.now() - dt.timedelta(
-                                seconds=300):
-                            stock_quote_data[STOCK].remove(it2)
-            for p, it3 in enumerate(ti_data[STOCK].copy()):
-                for key, value in it3.items():
-                    if key == 'time':
-                        if dt.datetime.strptime(value, "%Y-%m-%d %H:%M:%S") < dt.datetime.now() - dt.timedelta(
-                                seconds=300):
-                            ti_data[STOCK].remove(it3)
+    # needs to remove the far dated elements in the sql databases
+    db_bootstrap.cleanup_of_trade_database('trades.db')
+    db_bootstrap.cleanup_of_quote_database('quotes.db')
+    db_bootstrap.cleanup_of_indicators_database('indicators.db')
 
 
 def data_analysis():
-    analysis_module = stockAnalysis(stock_tickers, stock_quote_data, ti_data, trade_data, indicator_votes)
+    analysis_module = stockAnalysis(stock_tickers, stock_quote_data, ti_data, indicator_votes)
+    buy_list, short_list = analysis_module.indicator_analysis(stock_shortlist, stock_buylist, 'indicators.db')
+    volume_terms_dict = analysis_module.volume_analysis(tick_test, 'trades.db')
 
-    analysis_module.indicator_analysis(stock_shortlist, stock_buylist)
-    analysis_module.volume_analysis(volume_terms)
+    # WIP
+    purchasingAnalysis(stock_tickers, volume_terms_dict, buy_list, short_list).analysis_operations()
 
 
 if __name__ == '__main__':
+    # error handling
+    log = logging.getLogger(__name__)
+    log.setLevel(logging.DEBUG)
+    # create formatter and add it to the handlers
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    # create file handler which logs even debug messages
+    fh = logging.FileHandler('tmp.log')
+    fh.setLevel(logging.DEBUG)
+    fh.setFormatter(formatter)
+    log.addHandler(fh)
+    # create console handler with a higher log level
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.ERROR)
+    ch.setFormatter(formatter)
+    log.addHandler(ch)
+
     # check for an internet connection
     conn = httplib.HTTPConnection(r"www.google.com", timeout=5)
     try:
@@ -208,35 +176,17 @@ if __name__ == '__main__':
         logging.critical("You need to have an internet connection!")
         sys.exit(0)
 
-    # error handling
-    logger = logging.getLogger(__name__)
-
-    # Create handlers
-    c_handler = logging.StreamHandler()
-    f_handler = logging.FileHandler('debug.log')
-    c_handler.setLevel(logging.WARNING)
-    f_handler.setLevel(logging.ERROR)
-
-    # Create formatters and add it to handlers
-    c_format = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
-    f_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    c_handler.setFormatter(c_format)
-    f_handler.setFormatter(f_format)
-
-    # Add handlers to the logger
-    logger.addHandler(c_handler)
-    logger.addHandler(f_handler)
-
     file_handler_module = filePruning()
-    file_handler_module.initialize_files()
+    file_handler_module.initialize_directories()
     file_handler_module.prune_files()
 
+    api, finnhub_token, brokerage_keys = databaseInitializer().check_for_account_details('accounts.db')
+
     notification = ToastNotifier()
-    api = alpaca_bootstrapper()
     account = api.get_account()
     clock = api.get_clock()
 
-    account_balance = float(account.buying_power) / 4
+    account_balance = float(account.buying_power) / 2
     print('Trading account status:', account.status)
     print('Current account balance (without margin) is: $' + str(round(account_balance, 2)))
 
@@ -319,23 +269,26 @@ if __name__ == '__main__':
                 stock_quote_data = {}
                 ti_data = {}
                 indicator_votes = {}
-                volume_terms = {}
                 stock_buylist = {}
                 stock_shortlist = {}
+                tick_test = {}
                 for stock in stock_tickers:
                     stock_buylist[stock] = []
                     stock_shortlist[stock] = []
                     trade_data[stock] = []
                     stock_quote_data[stock] = []
                     ti_data[stock] = []
-                    volume_terms[stock] = (0, 0, 0, 0)
                     indicator_votes[stock] = {'Bullish Votes': 0, 'Bearish Votes': 0, 'Neutral Votes': 0}
+                    uptick = False
+                    downtick = False
+                    zerotick = False
+                    tick_test[stock] = [uptick, downtick, zerotick]
 
-                stock_data_bootstrap = stockDataEngine(stock_tickers=stock_tickers, quote_data=stock_quote_data)
-                websocket_bootstrap = WebsocketBootStrapper(stock_tickers=stock_tickers, trade_data=trade_data)
-                finnhub_tech_bootstrap = technicalIndicators(stock_tickers=stock_tickers, ti_data=ti_data)
-                bond_bootstrap = treasuryYields()
-                db_bootstrap = databaseInitializer(stock_tickers=stock_tickers, path='trade_db.db')
+                stock_data_bootstrap = stockDataEngine(stock_tickers, stock_quote_data)
+                websocket_bootstrap = WebsocketBootStrapper(stock_tickers, trade_data, finnhub_token)
+                finnhub_tech_bootstrap = technicalIndicators(stock_tickers, ti_data, finnhub_token)
+                bond_bootstrap = bondYields()
+                db_bootstrap = databaseInitializer(stock_tickers)
 
                 errormessage_market_close = 'The market is currently closed'
                 errormessage_5min_to_close = 'The market is closing in 5 minutes, be warned that any new positions ' \
@@ -347,14 +300,25 @@ if __name__ == '__main__':
                 options_pricing = initial_fetch()
                 websocket_boot()
                 initial_analysis(options_pricing)
-                db_bootstrap.generation_of_trade_database()
-                program_start = time.time()
+                db_bootstrap.generation_of_trade_database('trades.db')
+                db_bootstrap.generation_of_quote_database('quotes.db')
+                db_bootstrap.generation_of_indicators_database('indicators.db')
                 while True:
+                    """
+                    this works well i think as of 10/19/2021
+                    ideally i will want to get rid of the 10 second time.sleep at the end of this loop
+                    next step is adding in the rest of the functions for analysis and trading
+                    the options pricing analysis will be added in the end once i figure out what to do with it
+                    """
                     data_thread_marshaller()
+                    # we have the trade data information loaded into the sql database and i want to also do this
+                    # for the quote and technical indicator data because its better and more memory efficient
                     trade_data = websocket_bootstrap.return_data()
-                    db_bootstrap.insertion_into_database(trade_data)
-                    data_analysis()
+                    trade_data = db_bootstrap.insertion_into_database(trade_data, 'trades.db')
+                    stock_quote_data = db_bootstrap.insertion_into_quote_database(stock_quote_data, 'quotes.db')
+                    ti_data = db_bootstrap.insertion_into_indicators_database(ti_data, 'indicators.db')
 
+                    data_analysis()
                     cleanup()
                     # check_for_market_close()
                     time.sleep(10)

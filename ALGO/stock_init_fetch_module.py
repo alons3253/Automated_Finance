@@ -41,7 +41,7 @@ def get_tickers(tickers, api):
     # which is 2.34 million per normal trading day (6.5 hours)
     df = df[df.volume > 2340000]
 
-    # we should probably test these stocks to see if they are tradeable on alpaca
+    # we should test these stocks to see if they are tradeable on alpaca
     for index, iterrow in df.iterrows():
         for i in range(len(sandp500tickers)):
             ticker = iterrow['symbol']
@@ -53,7 +53,7 @@ def get_tickers(tickers, api):
                         tickers.append(ticker)
                 except Exception as error:
                     print(error)
-                    pass
+                    continue
     return tickers
 
 
@@ -81,25 +81,30 @@ def obv_score_array(stock_tickers):
 
     new_data = []
     for i in range(len(list_files)):
-        data = pd.read_csv(list_files[i]).tail(7)
+        data = pd.read_csv(list_files[i])
 
-        accumulationdistribution = 0
-        for j in range(7):
-            open_price = data.iloc[j, 1]
-            high = data.iloc[j, 2]
-            low = data.iloc[j, 3]
-            close = data.iloc[j, 4]
-            volume = data.iloc[j, 6]
+        trading_days = 0
+        total_volume = 0
+        total_mfv = 0
+        for index, row in data.iterrows():
+            if pd.isna(row['Volume']):
+                continue
+            open_price = row['Open']
+            high = row['High']
+            low = row['Low']
+            close = row['Close']
+            volume = row['Volume']
+            trading_days += 1
+            total_volume += volume
 
-            # divide by the open price to normalize it, that way accum/dist is reflective of money instead of
-            # number of shares
-            mfm = (((close - low) - (high - close)) / (high - low)) / open_price
+            mfm = (((close - low) - (high - close)) / (high - low)) * open_price
+            total_mfv += mfm * volume
 
-            if close > open_price:
-                accumulationdistribution += round(mfm * volume)
-            if close < open_price:
-                accumulationdistribution -= round(mfm * volume)
-        new_data.append([stock_tickers[i], accumulationdistribution])
+        avg_money_flow = total_mfv / trading_days
+        avg_volume = total_volume / trading_days
+
+        accumulationdistribution = avg_money_flow / avg_volume
+        new_data.append([stock_tickers[i], round(accumulationdistribution, 2)])
     return new_data
 
 
@@ -108,8 +113,9 @@ class APIbootstrap:
         self._api = _api
         self._pruned_tickers = []
         self._file_date = dt.datetime.date(dt.datetime.now())
-        self._file_name = f'../ALGO/Daily Stock Analysis/Accum-Dist Ranks/{self._file_date}_ACC_DIST_Ranked.csv'
-        self._stocks_folder = "../ALGO/Daily Stock Analysis/Stocks"
+        cwd = os.getcwd()
+        self._file_name = cwd + fr'\Daily Stock Analysis\Accum-Dist Ranks\\{self._file_date}_ACC_DIST_Ranked.csv'
+        self._stocks_folder = cwd + r"\Daily Stock Analysis\Stocks"
 
     def get_tickers(self):
         flag = False

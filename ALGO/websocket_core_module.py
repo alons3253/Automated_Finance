@@ -4,11 +4,8 @@ import datetime as dt
 
 
 class WebsocketBootStrapper:
-    def __init__(self, stock_tickers, trade_data):
-        token_file = open("finnhub_key.txt")
-        lines = token_file.readlines()
-        self.token = lines[0].rstrip('\n')
-
+    def __init__(self, stock_tickers=None, trade_data=None, token=None):
+        self.token = token
         self.socket = websocket.WebSocketApp("wss://ws.finnhub.io?token={}".format(self.token),
                                              on_message=self.on_message, on_error=self.on_error, on_close=self.on_close)
         self.socket.on_open = self.on_open
@@ -19,7 +16,6 @@ class WebsocketBootStrapper:
         self.socket.run_forever()
 
     def return_data(self):
-        print(self.trade_data)
         return self.trade_data
 
     def close_ws(self):

@@ -4,6 +4,9 @@ import ctypes
 import yahooquery
 import openpyxl
 import concurrent.futures
+import os
+
+from ALGO.excel_formatting_module import ExcelFormatting
 
 
 class Options:
@@ -32,7 +35,8 @@ class Options:
         handle.PutPricing.restype = ctypes.c_double
 
         today = dt.datetime.now()
-        url = f"../ALGO/Daily Stock Analysis/Options/{stock} Options Data {today.date()}.xlsx"
+        cwd = os.getcwd()
+        url = f"{cwd}\\Daily Stock Analysis\\Options\\{stock} Options Data {today.date()}.xlsx"
 
         dividend = self.initial_data[stock][-1]['dividend']
         spot = self.quote_data[stock][-1]['current price']
@@ -61,11 +65,15 @@ class Options:
             days_till_expiration = round(time_diff.total_seconds() / 86400, 2)
 
             bond_yield = float(self.rate[0])
-            if 30 <= days_till_expiration <= 60:
+            if 1 <= days_till_expiration <= 7:
                 bond_yield = float(self.rate[1])
-            elif 60 < days_till_expiration <= 90:
+            elif 7 < days_till_expiration <= 30:
                 bond_yield = float(self.rate[2])
-            elif days_till_expiration > 90:
+            elif 30 < days_till_expiration <= 60:
+                bond_yield = float(self.rate[3])
+            elif 60 < days_till_expiration <= 90:
+                bond_yield = float(self.rate[3])
+            else:
                 continue
 
             options_chain = options.loc[stock, date]
@@ -77,10 +85,10 @@ class Options:
 
             self.option_value[stock].append({str(exp): {'overvalued_call_options': 0, 'undervalued_call_options': 0,
                                                         'overvalued_put_options': 0, 'undervalued_put_options': 0}})
-            # calls_well_priced = 0
-            # total_calls = 0
-            # puts_well_priced = 0
-            # total_puts = 0
+            #calls_well_priced = 0
+            #total_calls = 0
+            #puts_well_priced = 0
+            #total_puts = 0
 
             bond_yield -= dividend  # dividend should be factored in
 
@@ -100,10 +108,10 @@ class Options:
                 spread = (row['bid'] + row['ask']) / 2
                 call_table.at[strike, 'lastPrice'] = spread
 
-                # error = ((option_price - spread) / spread)
-                # if -0.05 < error < 0.05:
-                #     calls_well_priced += 1
-                # total_calls += 1
+                #error = ((option_price - spread) / spread)
+                #if -0.05 < error < 0.05:
+                #    calls_well_priced += 1
+                #total_calls += 1
 
                 if option_price > spread:
                     self.option_value[stock][i][str(exp)]['undervalued_call_options'] += 1
@@ -125,22 +133,22 @@ class Options:
                 spread = (row['bid'] + row['ask']) / 2
                 put_table.at[index, 'lastPrice'] = spread
 
-                # error = ((option_price - spread) / spread)
-                # if -0.05 < error < 0.05:
-                #     puts_well_priced += 1
-                # total_puts += 1
+                #error = ((option_price - spread) / spread)
+                #if -0.05 < error < 0.05:
+                #    puts_well_priced += 1
+                #total_puts += 1
 
                 if option_price > spread:
                     self.option_value[stock][i][str(exp)]['undervalued_put_options'] += 1
                 if option_price < spread:
                     self.option_value[stock][i][str(exp)]['overvalued_put_options'] += 1
 
-            # pct_well_priced = (calls_well_priced / total_calls) * 100
-            # pct_well_priced_2 = (puts_well_priced / total_puts) * 100
-            # print(f"{round(pct_well_priced, 2)}% of calls well priced (within 5% of the bid/ask spread) "
-            #       f"for {stock} options expiring {exp}")
-            # print(f"{round(pct_well_priced_2, 2)}% of puts well priced (within 5% of the bid/ask spread) "
-            #       f"for {stock} options expiring {exp}")
+            #pct_well_priced = (calls_well_priced / total_calls) * 100
+            #pct_well_priced_2 = (puts_well_priced / total_puts) * 100
+            #print(f"{round(pct_well_priced, 2)}% of calls well priced (within 5% of the bid/ask spread) "
+            #      f"for {stock} options expiring {exp}")
+            #print(f"{round(pct_well_priced_2, 2)}% of puts well priced (within 5% of the bid/ask spread) "
+            #      f"for {stock} options expiring {exp}")
 
             i += 1
             call_table.to_excel(writer, sheet_name=f'{stock} Calls {exp}')
@@ -150,4 +158,9 @@ class Options:
             book.remove(sheet)
         except KeyError:
             pass
+        writer.save()
+        writer.close()
         book.save(url)
+        book.close()
+
+        ExcelFormatting(file_path=url).formatting()
