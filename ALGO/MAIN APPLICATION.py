@@ -20,6 +20,7 @@ from ALGO.file_handling_module import filePruning
 from ALGO.stock_and_option_analysis_module import stockAnalysis
 from ALGO.db_initializer import databaseInitializer
 from ALGO.purchasing_analysis import purchasingAnalysis
+from ALGO.trade_executor_module import tradeExecution
 
 
 # minor date functions
@@ -146,7 +147,17 @@ def data_analysis():
     volume_terms_dict = analysis_module.volume_analysis(tick_test, 'trades.db')
 
     # WIP
-    purchasingAnalysis(stock_tickers, volume_terms_dict, buy_list, short_list).analysis_operations()
+    for st in stock_tickers:
+        if volume_terms_dict[st]['30_seconds']['shares_bought'] == \
+                volume_terms_dict[st]['1_minute']['shares_bought'] or \
+                volume_terms_dict[st]['1_minute']['shares_bought'] == \
+                volume_terms_dict[st]['2_minutes']['shares_bought']:
+            continue
+        else:
+            strong_buy, buy, weak_buy, strong_sell, sell, weak_sell = \
+                purchasingAnalysis([st], volume_terms_dict, buy_list, short_list).analysis_operations(stock_quote_data)
+
+            trade_bootstrap.trade_execution(account_balance, strong_buy, buy, weak_buy, strong_sell, sell, weak_sell)
 
 
 if __name__ == '__main__':
@@ -289,6 +300,7 @@ if __name__ == '__main__':
                 finnhub_tech_bootstrap = technicalIndicators(stock_tickers, ti_data, finnhub_token)
                 bond_bootstrap = bondYields()
                 db_bootstrap = databaseInitializer(stock_tickers)
+                trade_bootstrap = tradeExecution(api, stock_tickers)
 
                 errormessage_market_close = 'The market is currently closed'
                 errormessage_5min_to_close = 'The market is closing in 5 minutes, be warned that any new positions ' \
@@ -314,14 +326,16 @@ if __name__ == '__main__':
                     # we have the trade data information loaded into the sql database and i want to also do this
                     # for the quote and technical indicator data because its better and more memory efficient
                     trade_data = websocket_bootstrap.return_data()
+
                     trade_data = db_bootstrap.insertion_into_database(trade_data, 'trades.db')
                     stock_quote_data = db_bootstrap.insertion_into_quote_database(stock_quote_data, 'quotes.db')
                     ti_data = db_bootstrap.insertion_into_indicators_database(ti_data, 'indicators.db')
 
                     data_analysis()
                     cleanup()
+
                     # check_for_market_close()
-                    time.sleep(10)
+                    time.sleep(5)
 
     # START OF PORTFOLIO ANALYSIS
     portfolio_bootstrap = portfolioAnalysis(api=api)

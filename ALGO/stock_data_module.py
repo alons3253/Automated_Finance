@@ -15,11 +15,11 @@ def spy_returns():
     return_string = rt.split("%")[0]
 
     if return_string[0] == '+':
-        spy_returns = '{:.2f}'.format(float(return_string.split('+')[1]))
+        sandp500_returns = '{:.2f}'.format(float(return_string.split('+')[1]))
     else:
-        spy_returns = float(return_string)
+        sandp500_returns = float(return_string)
 
-    return spy_returns
+    return sandp500_returns
 
 
 class stockDataEngine:

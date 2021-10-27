@@ -65,7 +65,7 @@ class Options:
             days_till_expiration = round(time_diff.total_seconds() / 86400, 2)
 
             bond_yield = float(self.rate[0])
-            if 1 <= days_till_expiration <= 7:
+            if 1 < days_till_expiration <= 7:
                 bond_yield = float(self.rate[1])
             elif 7 < days_till_expiration <= 30:
                 bond_yield = float(self.rate[2])
@@ -73,7 +73,7 @@ class Options:
                 bond_yield = float(self.rate[3])
             elif 60 < days_till_expiration <= 90:
                 bond_yield = float(self.rate[3])
-            else:
+            elif days_till_expiration > 90:
                 continue
 
             options_chain = options.loc[stock, date]

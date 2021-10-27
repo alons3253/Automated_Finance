@@ -13,59 +13,45 @@ class purchasingAnalysis:
         self.buy_list = buy_list
         self.short_list = short_list
 
-    def analysis_operations(self):
-        print(self.stock_tickers)
-        print(self.volume_dict)
-        print(self.buy_list)
-        print(self.short_list)
-"""
+    def analysis_operations(self, quote_data):
+        weak_buy = []
+        buy = []
+        strong_buy = []
+        weak_sell = []
+        sell = []
+        strong_sell = []
+        with sqlite3.connect(self.path + 'quotes.db', detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES) as db:
+            five_minutes_ago = dt.datetime.now() - dt.timedelta(minutes=5)
+            for stock in self.stock_tickers:
+                cur = db.execute(f"select * from quotes_{stock} where time > (?)", (five_minutes_ago,))
+                quote_data[stock] = cur.fetchall()
 
-    def analysis_operations():
-        # this block is only to see if the stock has had an increase or decrease in short term price respectively
-        # if the following conditions are met, then this represents a good trade opportunity
-        # this portion works
-        for sto in stock_buylist:
-            for pos, Item in enumerate(quote_data[sto]):
-                if dt.datetime.strptime(quote_data[sto][pos]['time'], "%Y-%m-%d %H:%M:%S") > \
-                        (dt.datetime.now() - dt.timedelta(minutes=5)):
-                    if pos == (len(quote_data[sto]) - 1) and quote_data[sto][pos]['current price'] < \
-                            stock_prices[sto]:
-                        stock_price_movement[sto] = 'short-term increase in price'
-        for sto in stock_shortlist:
-            for pos, Item in enumerate(quote_data[sto]):
-                if dt.datetime.strptime(quote_data[sto][pos]['time'], "%Y-%m-%d %H:%M:%S") > \
-                        (dt.datetime.now() - dt.timedelta(minutes=5)):
-                    # if current price is lower than quote price
-                    if pos == (len(quote_data[sto]) - 1) and quote_data[sto][pos]['current price'] > \
-                            stock_prices[sto]:
-                        stock_price_movement[sto] = 'short-term decrease in price'
-        print(stock_price_movement)
-        ##############################################################################
-        for STOCK_QUOTE in stock_price_movement:
-            if 'increase' in stock_price_movement[STOCK_QUOTE]:
-                if len(stock_buylist[STOCK_QUOTE]) > 2:
-                    if quote_data[STOCK_QUOTE][-1]['current price'] > quote_data[STOCK_QUOTE][-2]['current price'] > \
-                            quote_data[STOCK_QUOTE][-3]['current price']:
-                        if 'Very Bullish' in stock_buylist[STOCK_QUOTE][-1] and 'Very Bullish' in \
-                                stock_buylist[STOCK_QUOTE][-2]:
-                            strong_buy.append(STOCK_QUOTE)
-                    elif quote_data[STOCK_QUOTE][-1]['current price'] > quote_data[STOCK_QUOTE][-2]['current price']:
-                        if 'Bullish' in stock_buylist[STOCK_QUOTE][-1] and 'Bullish' in stock_buylist[STOCK_QUOTE][-2]:
-                            buy.append(STOCK_QUOTE)
-                    else:
-                        weak_buy.append(STOCK_QUOTE)
-            if 'decrease' in stock_price_movement[STOCK_QUOTE]:
-                if len(stock_shortlist[STOCK_QUOTE]) > 2:
-                    if quote_data[STOCK_QUOTE][-1]['current price'] < quote_data[STOCK_QUOTE][-2]['current price'] < \
-                            quote_data[STOCK_QUOTE][-3]['current price']:
-                        if 'Very Bearish' in stock_shortlist[STOCK_QUOTE][-1] and 'Very Bearish' in STOCK_QUOTE:
-                            strong_sell.append(STOCK_QUOTE)
-                    elif quote_data[STOCK_QUOTE][-1]['current price'] < quote_data[STOCK_QUOTE][-2]['current price']:
-                        if 'Bearish' in stock_shortlist[STOCK_QUOTE][-1] and 'Bearish' in stock_shortlist[STOCK_QUOTE][-2]:
-                            sell.append(STOCK_QUOTE)
-                    else:
-                        weak_sell.append(STOCK_QUOTE)
-        ####################################################################################################################
+        for stock in self.stock_tickers:
+            short_indicator = self.short_list[stock][-1]
+            long_indicator = self.buy_list[stock][-1]
+
+            order_flow = self.volume_dict[stock]['30_seconds']['shares_bought'] / \
+                (self.volume_dict[stock]['30_seconds']['shares_bought'] +
+                 self.volume_dict[stock]['30_seconds']['shares_sold'])
+
+            if order_flow < 0.5 and (short_indicator == 'Bearish' and quote_data[stock] == 'Bearish') or \
+                    (short_indicator == 'Neutral' or quote_data[stock] == 'Bearish') or \
+                    (short_indicator == 'Bearish' or quote_data[stock] == 'Neutral'):
+                weak_sell.append(f'SELL 1 LOT OF {stock}')
+            elif order_flow < 0.5 and short_indicator == 'Bearish' and quote_data[stock] == 'Bearish':
+                sell.append(f'SHORT SELL 1 LOT OF {stock}')
+            elif order_flow < 0.5 and short_indicator == 'Very Bearish' and quote_data[stock] == 'Very Bearish':
+                strong_sell.append(f'SELL LONG POSITION AND SHORT SELL {stock}')
+
+            elif order_flow > 0.5 and (long_indicator == 'Bullish' and quote_data[stock] == 'Bullish') or \
+                    (long_indicator == 'Neutral' or quote_data[stock] == 'Bullish') or \
+                    (long_indicator == 'Bullish' or quote_data[stock] == 'Neutral'):
+                weak_buy.append(f'COVER 1 LOT OF {stock}')
+            elif order_flow > 0.5 and long_indicator == 'Bullish' and quote_data[stock] == 'Bullish':
+                buy.append(f'BUY 1 LOT OF {stock}')
+            elif order_flow > 0.5 and long_indicator == 'Very Bullish' and quote_data[stock] == 'Very Bullish':
+                strong_buy.append(f'COVER SHORT POSITION AND GO LONG {stock}')
+
         if len(strong_buy) > 0:
             print('Stock Strong Buy List:', strong_buy)
         if len(buy) > 0:
@@ -78,4 +64,5 @@ class purchasingAnalysis:
             print('Stock Sell List:', sell)
         if len(weak_sell) > 0:
             print('Stock Weak Sell List:', weak_sell)
-"""
+
+        return strong_buy, buy, weak_buy, strong_sell, sell, weak_sell

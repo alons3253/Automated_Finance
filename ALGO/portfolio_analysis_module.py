@@ -8,6 +8,7 @@ from ALGO.stock_data_module import stockDataEngine, spy_returns
 from ALGO.bond_yield_fetch_module import bondYields
 from ALGO.excel_formatting_module import ExcelFormatting
 
+
 # currently broken
 def data_to_excel(data, sheet_name):
     cwd = os.getcwd()
@@ -369,7 +370,7 @@ class portfolioAnalysis:
         init_data = data_engine.initial_quote_data_fetch()
         quote_data = data_engine.quote_data_processor()
         spyreturn = float(spy_returns())
-        bond_object = treasuryYields()
+        bond_object = bondYields()
         bond_yields = bond_object.treasury_bond_yields()
         riskfreerate = float(bond_yields[0])
 

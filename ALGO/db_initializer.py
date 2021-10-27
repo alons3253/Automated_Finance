@@ -116,12 +116,16 @@ class databaseInitializer:
             for stock in self.stock_tickers:
                 cur = db.execute(f"select rowid, * from trades_{stock}")
                 for row in cur.fetchall():
+                    # print(row)
                     time = dt.datetime.strptime(row[1], '%Y-%m-%d %H:%M:%S.%f')
                     difference = dt.datetime.now() - time
                     # delete trades from 8 hours ago
                     if difference.total_seconds() > 3600:
                         db.execute(f"delete from trades_{stock} where rowid = (?)", (row[0],))
                         db.commit()
+            # deletes empty rows
+            db.execute("vacuum")
+            db.commit()
 
     def insertion_into_database(self, data, path):
         with sqlite3.connect(self.path + path) as db:
@@ -173,12 +177,15 @@ class databaseInitializer:
             for stock in self.stock_tickers:
                 cur = db.execute(f"select rowid, * from quotes_{stock}")
                 for row in cur.fetchall():
+                    # print(row)
                     time = dt.datetime.strptime(row[1], '%Y-%m-%d %H:%M:%S')
                     difference = dt.datetime.now() - time
                     # delete trades from 8 hours ago
                     if difference.total_seconds() > 3600:
                         db.execute(f"delete from quotes_{stock} where rowid = (?)", (row[0],))
                         db.commit()
+            db.execute("vacuum")
+            db.commit()
 
     def insertion_into_quote_database(self, data, file):
         with sqlite3.connect(self.path + file) as db:
@@ -233,12 +240,15 @@ class databaseInitializer:
             for stock in self.stock_tickers:
                 cur = db.execute(f"select rowid, * from indicators_{stock}")
                 for row in cur.fetchall():
+                    # print(row)
                     time = dt.datetime.strptime(row[1], '%Y-%m-%d %H:%M:%S')
                     difference = dt.datetime.now() - time
                     # delete trades from 1 hour ago
                     if difference.total_seconds() > 3600:
                         db.execute(f"delete from indicators_{stock} where rowid = (?)", (row[0],))
                         db.commit()
+            db.execute("vacuum")
+            db.commit()
 
     def insertion_into_indicators_database(self, data, file):
         with sqlite3.connect(self.path + file) as db:

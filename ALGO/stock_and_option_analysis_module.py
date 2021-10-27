@@ -13,6 +13,7 @@ class stockAnalysis:
         self.indicator_votes = indicator_votes
 
     def option_analysis(self):
+
         pass
 
     # okay for now
@@ -28,11 +29,16 @@ class stockAnalysis:
         with sqlite3.connect(self.path + path, detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES) as db:
             for stock in self.stock_tickers:
                 volume_terms_dict[stock] = {"30_seconds": {'shares_bought': 0, 'shares_sold': 0},
-                                       "1_minute": {'shares_bought': 0, 'shares_sold': 0},
-                                       "2_minutes": {'shares_bought': 0, 'shares_sold': 0},
-                                       "4_minutes": {'shares_bought': 0, 'shares_sold': 0},
-                                       "8_minutes": {'shares_bought': 0, 'shares_sold': 0},
-                                       "15_minutes": {'shares_bought': 0, 'shares_sold': 0}}
+                                            "1_minute": {'shares_bought': 0, 'shares_sold': 0},
+                                            "2_minutes": {'shares_bought': 0, 'shares_sold': 0},
+                                            "4_minutes": {'shares_bought': 0, 'shares_sold': 0},
+                                            "8_minutes": {'shares_bought': 0, 'shares_sold': 0},
+                                            "15_minutes": {'shares_bought': 0, 'shares_sold': 0}}
+
+                uptick = tick_test[stock][0]
+                downtick = tick_test[stock][1]
+                zerotick = tick_test[stock][2]
+
                 try:
                     cur = db.execute(f"select rowid, * from trades_{stock} where time > (?)",
                                      (self.quote_data[stock][-2][0],))
@@ -42,10 +48,6 @@ class stockAnalysis:
                     self.quote_data[stock] = []
                     first_trade = trade_elements[0]
                     second_trade = trade_elements[1]
-
-                    uptick = tick_test[stock][0]
-                    downtick = tick_test[stock][1]
-                    zerotick = tick_test[stock][2]
 
                     for index, row in enumerate(trade_elements.copy()):
                         # https://hashingit.com/elements/research-resources/1991-06-inferring-trade-direction.pdf
@@ -172,6 +174,7 @@ class stockAnalysis:
                 five_minutes_ago = dt.datetime.now() - dt.timedelta(minutes=5)
                 cur = db.execute(f"select * from indicators_{stock} where time > (?)", (five_minutes_ago,))
                 ti_data = cur.fetchall()
+                print(ti_data)
                 for row in ti_data:
                     timestamp = row[0].strftime('%H:%M:%S')
                     if len(self.ti_data) > 0:
