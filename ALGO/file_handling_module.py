@@ -8,7 +8,7 @@ class filePruning:
     def __init__(self):
         self.today = datetime.date.today().strftime("%m-%d-%Y")
         self.root_path = './Daily Stock Analysis'
-        self.dir_list = ['/Accum-Dist Ranks', '/Options', '/Stocks', '/Portfolio-Analysis']
+        self.dir_list = ['/Accum-Dist Ranks', '/Options', '/Stocks', '/Portfolio-Analysis', '/Trades']
 
     def initialize_directories(self):
         if not os.path.exists(self.root_path):

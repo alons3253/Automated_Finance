@@ -15,8 +15,8 @@ class databaseInitializer:
             os.mkdir(fr'{self.cwd}\Databases\\')
         self.path = f'{self.cwd}\\Databases\\'
 
-    def check_for_account_details(self, path):
-        with sqlite3.connect(self.path + path) as db:
+    def check_for_account_details(self):
+        with sqlite3.connect(self.path + 'accounts.db') as db:
             db.execute(f'''create table if not exists account_info (
                     alpaca_key TEXT NOT NULL UNIQUE,
                     alpaca_security_key TEXT NOT NULL UNIQUE,
@@ -26,7 +26,7 @@ class databaseInitializer:
                     )''')
             db.commit()
 
-        with sqlite3.connect(self.path + path) as db:
+        with sqlite3.connect(self.path + 'accounts.db') as db:
             try:
                 db.execute("select * from account_info")
             except IndexError:
@@ -76,7 +76,7 @@ class databaseInitializer:
                                         api_version='v2')
             alpaca_api.get_account()
             logging.debug("A valid Alpaca trading account was found")
-        return alpaca_api, account_details[2], (account_details[3], account_details[4])
+        return alpaca_api, (account_details[0], account_details[1]), account_details[2], (account_details[3], account_details[4])
 
     def generation_of_trade_database(self, file):
         if os.path.isfile(self.path + file):

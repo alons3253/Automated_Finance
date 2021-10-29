@@ -174,7 +174,6 @@ class stockAnalysis:
                 five_minutes_ago = dt.datetime.now() - dt.timedelta(minutes=5)
                 cur = db.execute(f"select * from indicators_{stock} where time > (?)", (five_minutes_ago,))
                 ti_data = cur.fetchall()
-                print(ti_data)
                 for row in ti_data:
                     timestamp = row[0].strftime('%H:%M:%S')
                     if len(self.ti_data) > 0:

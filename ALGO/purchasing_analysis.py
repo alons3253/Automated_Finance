@@ -27,30 +27,39 @@ class purchasingAnalysis:
                 quote_data[stock] = cur.fetchall()
 
         for stock in self.stock_tickers:
-            short_indicator = self.short_list[stock][-1]
-            long_indicator = self.buy_list[stock][-1]
+            try:
+                order_flow = round(self.volume_dict[stock]['30_seconds']['shares_bought'] /
+                                   (self.volume_dict[stock]['30_seconds']['shares_bought'] +
+                                    self.volume_dict[stock]['30_seconds']['shares_sold']), 2)
+            except ZeroDivisionError:
+                continue
 
-            order_flow = self.volume_dict[stock]['30_seconds']['shares_bought'] / \
-                (self.volume_dict[stock]['30_seconds']['shares_bought'] +
-                 self.volume_dict[stock]['30_seconds']['shares_sold'])
+            try:
+                short_indicator = self.short_list[stock][-1]
 
-            if order_flow < 0.5 and (short_indicator == 'Bearish' and quote_data[stock] == 'Bearish') or \
-                    (short_indicator == 'Neutral' or quote_data[stock] == 'Bearish') or \
-                    (short_indicator == 'Bearish' or quote_data[stock] == 'Neutral'):
-                weak_sell.append(f'SELL 1 LOT OF {stock}')
-            elif order_flow < 0.5 and short_indicator == 'Bearish' and quote_data[stock] == 'Bearish':
-                sell.append(f'SHORT SELL 1 LOT OF {stock}')
-            elif order_flow < 0.5 and short_indicator == 'Very Bearish' and quote_data[stock] == 'Very Bearish':
-                strong_sell.append(f'SELL LONG POSITION AND SHORT SELL {stock}')
+                if order_flow < 0.5 and (short_indicator == 'Bearish' and quote_data[stock] == 'Bearish') or \
+                        (short_indicator == 'Neutral' or quote_data[stock] == 'Bearish') or \
+                        (short_indicator == 'Bearish' or quote_data[stock] == 'Neutral'):
+                    weak_sell.append(f'SELL 1 LOT OF {stock}')
+                elif order_flow < 0.5 and short_indicator == 'Bearish' and quote_data[stock] == 'Bearish':
+                    sell.append(f'SHORT SELL 1 LOT OF {stock}')
+                elif order_flow < 0.5 and short_indicator == 'Very Bearish' and quote_data[stock] == 'Very Bearish':
+                    strong_sell.append(f'SELL LONG POSITION AND SHORT SELL {stock}')
+            except IndexError:
+                pass
+            try:
+                long_indicator = self.buy_list[stock][-1]
 
-            elif order_flow > 0.5 and (long_indicator == 'Bullish' and quote_data[stock] == 'Bullish') or \
-                    (long_indicator == 'Neutral' or quote_data[stock] == 'Bullish') or \
-                    (long_indicator == 'Bullish' or quote_data[stock] == 'Neutral'):
-                weak_buy.append(f'COVER 1 LOT OF {stock}')
-            elif order_flow > 0.5 and long_indicator == 'Bullish' and quote_data[stock] == 'Bullish':
-                buy.append(f'BUY 1 LOT OF {stock}')
-            elif order_flow > 0.5 and long_indicator == 'Very Bullish' and quote_data[stock] == 'Very Bullish':
-                strong_buy.append(f'COVER SHORT POSITION AND GO LONG {stock}')
+                if order_flow > 0.5 and (long_indicator == 'Bullish' and quote_data[stock] == 'Bullish') or \
+                        (long_indicator == 'Neutral' or quote_data[stock] == 'Bullish') or \
+                        (long_indicator == 'Bullish' or quote_data[stock] == 'Neutral'):
+                    weak_buy.append(f'COVER 1 LOT OF {stock}')
+                elif order_flow > 0.5 and long_indicator == 'Bullish' and quote_data[stock] == 'Bullish':
+                    buy.append(f'BUY 1 LOT OF {stock}')
+                elif order_flow > 0.5 and long_indicator == 'Very Bullish' and quote_data[stock] == 'Very Bullish':
+                    strong_buy.append(f'COVER SHORT POSITION AND GO LONG {stock}')
+            except IndexError:
+                pass
 
         if len(strong_buy) > 0:
             print('Stock Strong Buy List:', strong_buy)

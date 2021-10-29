@@ -1,6 +1,5 @@
 # updated to full functionality
 
-from win10toast import ToastNotifier
 import concurrent.futures
 import datetime as dt
 import time
@@ -159,6 +158,8 @@ def data_analysis():
 
             trade_bootstrap.trade_execution(account_balance, strong_buy, buy, weak_buy, strong_sell, sell, weak_sell)
 
+        stock_quote_data[st] = []
+
 
 if __name__ == '__main__':
     # error handling
@@ -191,9 +192,8 @@ if __name__ == '__main__':
     file_handler_module.initialize_directories()
     file_handler_module.prune_files()
 
-    api, finnhub_token, brokerage_keys = databaseInitializer().check_for_account_details('accounts.db')
+    api, alpaca_data_keys, finnhub_token, brokerage_keys = databaseInitializer().check_for_account_details()
 
-    notification = ToastNotifier()
     account = api.get_account()
     clock = api.get_clock()
 
@@ -297,7 +297,7 @@ if __name__ == '__main__':
 
                 stock_data_bootstrap = stockDataEngine(stock_tickers, stock_quote_data)
                 websocket_bootstrap = WebsocketBootStrapper(stock_tickers, trade_data, finnhub_token)
-                finnhub_tech_bootstrap = technicalIndicators(stock_tickers, ti_data, finnhub_token)
+                finnhub_tech_bootstrap = technicalIndicators(stock_tickers, ti_data)
                 bond_bootstrap = bondYields()
                 db_bootstrap = databaseInitializer(stock_tickers)
                 trade_bootstrap = tradeExecution(api, stock_tickers)
@@ -317,23 +317,27 @@ if __name__ == '__main__':
                 db_bootstrap.generation_of_indicators_database('indicators.db')
                 while True:
                     """
-                    this works well i think as of 10/19/2021
+                    works well as of 10/28/2021
+                    want to optimize the data i am pulling, do not want to take the entire chain of intraday data
+                    when i am doing minute by minute updates, also that should probably go to a db
+                    
                     ideally i will want to get rid of the 10 second time.sleep at the end of this loop
-                    next step is adding in the rest of the functions for analysis and trading
+                    
                     the options pricing analysis will be added in the end once i figure out what to do with it
                     """
                     data_thread_marshaller()
                     # we have the trade data information loaded into the sql database and i want to also do this
                     # for the quote and technical indicator data because its better and more memory efficient
                     trade_data = websocket_bootstrap.return_data()
-
+                    print(trade_data)
+                    print(stock_quote_data)
+                    print(ti_data)
                     trade_data = db_bootstrap.insertion_into_database(trade_data, 'trades.db')
                     stock_quote_data = db_bootstrap.insertion_into_quote_database(stock_quote_data, 'quotes.db')
                     ti_data = db_bootstrap.insertion_into_indicators_database(ti_data, 'indicators.db')
 
                     data_analysis()
                     cleanup()
-
                     # check_for_market_close()
                     time.sleep(5)
 
