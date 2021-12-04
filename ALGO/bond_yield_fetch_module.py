@@ -29,10 +29,33 @@ class bondYields:
         self.r = get("https://www.treasury.gov/resource-center/data-chart-center/interest-rates/Pages/Text"
                      "View.aspx?data=yield")
         self.r1 = get("https://www.global-rates.com/en/interest-rates/libor/american-dollar/american-dollar.aspx")
+        self.r2 = get("https://fred.stlouisfed.org/series/SOFR")
         self.cwd = os.getcwd()
         bond_files = glob.glob(self.cwd + r"\Daily Stock Analysis\Bonds\*.xlsx")
         for i in bond_files:
             os.remove(i)
+
+    # preferred rate for pricing derivatives
+    def overnightindexedswaps(self, days_to_expiry, overnight_rate):
+        # the theory behind this is to calculate the spread between a compounded daily index rate (the overnight rate)
+        # and a fixed index rate. this is valid up to a two week term
+
+        # first step is to multiply the overnight rate for the period in which the swap applies
+        # the overnight lending rate is typically the federal funds rate or the SOFR (secured overnight financing rate)
+        floating_rate_leg = ((overnight_rate * days_to_expiry) / 360) + 1
+
+        # fixed rate is the LIBOR rate as it is the least risky rate available
+        # this also should pretty much always be larger
+        fixed_rate_leg = ((overnight_rate / 360) + 1) ** days_to_expiry
+
+        ois_rate = (fixed_rate_leg - floating_rate_leg) * 100
+        return round(ois_rate, 6)
+
+    def sofr(self):
+        soup = BeautifulSoup(self.r2.text, 'lxml')
+        sofr_list = [entry.text for entry in soup.find_all('span', {'class': 'series-meta-observation-value'})]
+        sofr = float(sofr_list[-1])
+        return sofr
 
     # LIBOR rates are okay for pricing derivatives
     def LIBOR_yields(self):
@@ -79,18 +102,21 @@ class bondYields:
 
         ExcelFormatting(file_path=url).formatting()
 
-        overnight_rate = float(libor_refitted_df.iloc[0, 0].split()[0])
-        one_week_rate = float(libor_refitted_df.iloc[1, 0].split()[0])
-        one_month_rate = float(libor_refitted_df.iloc[3, 0].split()[0])
-        two_month_rate = float(libor_refitted_df.iloc[4, 0].split()[0])
-        three_month_rate = float(libor_refitted_df.iloc[5, 0].split()[0])
-        six_month_rate = float(libor_refitted_df.iloc[8, 0].split()[0])
-        twelve_month_rate = float(libor_refitted_df.iloc[14, 0].split()[0])
-
-        libor_yields = (round(overnight_rate, 6), round(one_week_rate, 6), round(one_month_rate, 6),
-                        round(two_month_rate, 6), round(three_month_rate, 6), round(six_month_rate, 6),
-                        round(twelve_month_rate, 6))
-        return libor_yields
+        for i in range(4):
+            try:
+                overnight_rate = float(libor_refitted_df.iloc[0, i].split()[0])
+                one_week_rate = float(libor_refitted_df.iloc[1, i].split()[0])
+                one_month_rate = float(libor_refitted_df.iloc[3, i].split()[0])
+                two_month_rate = float(libor_refitted_df.iloc[4, i].split()[0])
+                three_month_rate = float(libor_refitted_df.iloc[5, i].split()[0])
+                six_month_rate = float(libor_refitted_df.iloc[8, i].split()[0])
+                twelve_month_rate = float(libor_refitted_df.iloc[14, i].split()[0])
+                libor_yields = (round(overnight_rate, 6), round(one_week_rate, 6), round(one_month_rate, 6),
+                                round(two_month_rate, 6), round(three_month_rate, 6), round(six_month_rate, 6),
+                                round(twelve_month_rate, 6))
+                return libor_yields
+            except ValueError:
+                continue
 
     def treasury_bond_yields(self):
         soup = BeautifulSoup(self.r.text, 'lxml')

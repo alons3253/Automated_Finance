@@ -90,32 +90,30 @@ def data_thread_marshaller():
 # working
 def initial_fetch():
     # initial fetches
-    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
         initial_quote_fetch = executor.submit(stock_data_bootstrap.initial_quote_data_fetch).result()
         stock_quotes = executor.submit(stock_data_bootstrap.quote_data_processor).result()
         treasury_yields = executor.submit(bond_bootstrap.treasury_bond_yields).result()
         libor_yields = executor.submit(bond_bootstrap.LIBOR_yields).result()
         ti_fetch = executor.submit(finnhub_tech_bootstrap.tech_indicator).result()
 
-    print("T-Bond Yields:", treasury_yields)
-    print("LIBOR Yields:", libor_yields)
-    print(initial_quote_fetch)
-    print(stock_quotes)
-    print(ti_fetch)
-
     try:
         options_bootstrapper = Options(stock_tickers=stock_tickers, initial_data=initial_quote_fetch,
-                                       quote_data=stock_quotes, rate=libor_yields)
-        options_pricing = options_bootstrapper.thread_marshaller()
+                                       quote_data=stock_quotes, rate=libor_yields, bbond=bond_bootstrap)
+        # function changed to a yield from in order to wait and make sure everything is done and priced
+        options_bootstrapper.thread_marshaller()
 
-        return options_pricing
+        return options_bootstrapper, initial_quote_fetch, stock_quotes, libor_yields, ti_fetch
     except Exception as error:
         logging.error(f"Exception occurred {error}", exc_info=True)
 
 
 # WIP
-def initial_analysis(options_pricing):
-    # note as of 10/20, i am ignoring the options for now while i rebuild the analysis and trading modules
+def initial_analysis():
+    print("LIBOR Yields:", libor_yields)
+    print(initial_quote_fetch)
+    print(stock_quote_data)
+    print(ti_data)
 
     """
     for the initial analysis function, we want to take a look at the options we just gathered and take a note
@@ -127,12 +125,11 @@ def initial_analysis(options_pricing):
     # first lets look at early opex and check to make sure it's well priced
     print('---------------------------------------------')
     print('Options Analysis')
-    for opex in options_pricing:
-        print(opex)
-        print(options_pricing[opex])
+    print(stock_tickers)
+    max_pain = options_bootstrapper.options_fetch(initial_quote_fetch)
+    print(max_pain)
 
 
-# needs fixing
 def cleanup():
     # needs to remove the far dated elements in the sql databases
     db_bootstrap.cleanup_of_trade_database('trades.db')
@@ -142,22 +139,20 @@ def cleanup():
 
 def data_analysis():
     analysis_module = stockAnalysis(stock_tickers, stock_quote_data, ti_data, indicator_votes)
-    buy_list, short_list = analysis_module.indicator_analysis(stock_shortlist, stock_buylist, 'indicators.db')
-    volume_terms_dict = analysis_module.volume_analysis(tick_test, 'trades.db')
+    b_l, s_l = analysis_module.indicator_analysis(stock_shortlist, stock_buylist, 'indicators.db')
+    volume_dict = analysis_module.trade_analysis(tick_test, 'trades.db')
+    option_analysis = analysis_module.option_analysis()
+    print('change in options volume:')
+    print(option_analysis)
 
     # WIP
     for st in stock_tickers:
-        if volume_terms_dict[st]['30_seconds']['shares_bought'] == \
-                volume_terms_dict[st]['1_minute']['shares_bought'] or \
-                volume_terms_dict[st]['1_minute']['shares_bought'] == \
-                volume_terms_dict[st]['2_minutes']['shares_bought']:
+        if volume_dict[st]['30_seconds']['shares_bought'] == volume_dict[st]['1_minute']['shares_bought'] or \
+                volume_dict[st]['1_minute']['shares_bought'] == volume_dict[st]['2_minutes']['shares_bought']:
             continue
         else:
-            strong_buy, buy, weak_buy, strong_sell, sell, weak_sell = \
-                purchasingAnalysis([st], volume_terms_dict, buy_list, short_list).analysis_operations(stock_quote_data)
-
-            trade_bootstrap.trade_execution(account_balance, strong_buy, buy, weak_buy, strong_sell, sell, weak_sell)
-
+            s_b, b, w_b, s_s, s, w_s = purchasingAnalysis([st], volume_dict, b_l, s_l).analysis_operations(stock_quote_data)
+            trade_bootstrap.trade_execution(account_balance, s_b, b, w_b, s_s, s, w_s)
         stock_quote_data[st] = []
 
 
@@ -169,7 +164,7 @@ if __name__ == '__main__':
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     # create file handler which logs even debug messages
     fh = logging.FileHandler('tmp.log')
-    fh.setLevel(logging.DEBUG)
+    fh.setLevel(logging.INFO)
     fh.setFormatter(formatter)
     log.addHandler(fh)
     # create console handler with a higher log level
@@ -191,6 +186,7 @@ if __name__ == '__main__':
     file_handler_module = filePruning()
     file_handler_module.initialize_directories()
     file_handler_module.prune_files()
+    file_handler_module.excel_handler()
 
     api, alpaca_data_keys, finnhub_token, brokerage_keys = databaseInitializer().check_for_account_details()
 
@@ -213,10 +209,10 @@ if __name__ == '__main__':
         print('Press 1 for Automated Stock Fetch and Trading')
         print('Press 2 for Manual Stock Fetch and Automated Trading')
         print('Press 3 for Portfolio Analysis')
-        print('This program is developed solely by Anthony M. Lonsdale')
-        print('Contact Information:')
-        print('E-mail: alons3253@gmail.com')
-        print('Cell: 816-872-7762')
+        #print('This program is developed solely by Anthony M. Lonsdale')
+        #print('Contact Information:')
+        #print('E-mail: alons3253@gmail.com')
+        #print('Cell: 816-872-7762')
 
         choice = None
         while True:
@@ -300,8 +296,9 @@ if __name__ == '__main__':
                 finnhub_tech_bootstrap = technicalIndicators(stock_tickers, ti_data)
                 bond_bootstrap = bondYields()
                 db_bootstrap = databaseInitializer(stock_tickers)
-                trade_bootstrap = tradeExecution(api, stock_tickers)
+                db_bootstrap.cleanup_options_database('options.db')
 
+                trade_bootstrap = tradeExecution(api, stock_tickers)
                 errormessage_market_close = 'The market is currently closed'
                 errormessage_5min_to_close = 'The market is closing in 5 minutes, be warned that any new positions ' \
                                              'may be held until the next trading day'
@@ -309,9 +306,9 @@ if __name__ == '__main__':
                 cutoff_bool = False
                 #######################################################################################################
                 print("Starting Initial Fetch, this may take several minutes")
-                options_pricing = initial_fetch()
+                options_bootstrapper, initial_quote_fetch, stock_quote_data, libor_yields, ti_data = initial_fetch()
                 websocket_boot()
-                initial_analysis(options_pricing)
+                initial_analysis()
                 db_bootstrap.generation_of_trade_database('trades.db')
                 db_bootstrap.generation_of_quote_database('quotes.db')
                 db_bootstrap.generation_of_indicators_database('indicators.db')

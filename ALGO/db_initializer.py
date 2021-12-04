@@ -180,7 +180,7 @@ class databaseInitializer:
                     # print(row)
                     time = dt.datetime.strptime(row[1], '%Y-%m-%d %H:%M:%S')
                     difference = dt.datetime.now() - time
-                    # delete trades from 8 hours ago
+                    # delete quotes from 1 hour ago
                     if difference.total_seconds() > 3600:
                         db.execute(f"delete from quotes_{stock} where rowid = (?)", (row[0],))
                         db.commit()
@@ -243,7 +243,7 @@ class databaseInitializer:
                     # print(row)
                     time = dt.datetime.strptime(row[1], '%Y-%m-%d %H:%M:%S')
                     difference = dt.datetime.now() - time
-                    # delete trades from 1 hour ago
+                    # delete indicators from 1 hour ago
                     if difference.total_seconds() > 3600:
                         db.execute(f"delete from indicators_{stock} where rowid = (?)", (row[0],))
                         db.commit()
@@ -262,3 +262,31 @@ class databaseInitializer:
 
         print("Indicator data saved to DB")
         return data
+
+    def cleanup_options_database(self, file):
+        # the timestamps table needs to be reset every time the program runs
+        flag = False
+        with sqlite3.connect(self.path + file) as db:
+            cursor = db.cursor()
+            try:
+                cursor.execute("select * from timestamp")
+            except sqlite3.OperationalError:
+                cursor.execute("CREATE TABLE IF NOT EXISTS timestamp (stock text, time timestamp, expiration date)")
+                return
+            # if timestamp table exists then make sure that if it has an entry from yesterday, the whole db is wiped
+            # in order to reset everything
+            timestamps = cursor.fetchall()
+            if len(timestamps) > 0:
+                for element in timestamps:
+                    timestamp = dt.datetime.strptime(element[1], "%Y-%m-%d %H:%M:%S.%f")
+                    if timestamp.date() < dt.date.today():
+                        # options chains need to be removed because the stocks from yesterday may not be the same as the
+                        # stocks being traded today
+                        flag = True
+                        break
+        db.close()
+        if flag:
+            os.remove(self.path + file)
+            with sqlite3.connect(self.path + file) as db:
+                cursor = db.cursor()
+                cursor.execute("CREATE TABLE timestamp (stock text, time timestamp, expiration date)")

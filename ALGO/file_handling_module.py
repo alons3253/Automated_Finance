@@ -2,6 +2,7 @@ import datetime
 import re
 import glob
 import os
+import psutil
 
 
 class filePruning:
@@ -34,3 +35,8 @@ class filePruning:
                         os.remove(pruned_backup)
                 except AttributeError:
                     continue
+
+    def excel_handler(self):
+        for proc in psutil.process_iter():
+            if proc.name() == "EXCEL.EXE":
+                proc.kill()

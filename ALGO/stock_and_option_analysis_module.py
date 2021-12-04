@@ -1,30 +1,85 @@
 import datetime as dt
 import sqlite3
 import os
+import yahooquery
+import pandas as pd
 
 
 class stockAnalysis:
     def __init__(self, stock_tickers, quote_data, ti_data, indicator_votes):
-        cwd = os.getcwd()
-        self.path = fr'{cwd}\Databases\\'
+        self.cwd = os.getcwd()
+        self.path = fr'{self.cwd}\Databases\\'
         self.stock_tickers = stock_tickers
         self.quote_data = quote_data
         self.ti_data = ti_data
         self.indicator_votes = indicator_votes
 
     def option_analysis(self):
+        connection = sqlite3.connect(f'{self.cwd}\\Databases\\options.db')
+        cursor = connection.cursor()
 
-        pass
+        change_in_options_volume = {}
+        for stock in self.stock_tickers:
+            query = yahooquery.Ticker([stock], asynchronous=True)
+            options = query.option_chain
+            expiration_dates = list(options.index.unique(level=1))
+
+            cursor.execute(f'select * from timestamp where stock = (?)', (stock,))
+
+            for element in cursor.fetchall():
+                if element[0] == stock:
+                    time = dt.datetime.strptime(element[1], "%Y-%m-%d %H:%M:%S.%f")
+                    print(time)
+                    if time + dt.timedelta(minutes=5) < dt.datetime.now():
+                        change_in_options_volume[stock] = []
+                        for date in expiration_dates:
+                            dictionary_of_options_volume = {'calls': [], 'puts': []}
+
+                            expiration = date.to_pydatetime().date()
+                            exp_time = dt.datetime.combine(expiration, dt.time(15, 0))
+                            time_diff = exp_time - dt.datetime.now()
+                            if time_diff.days < 0:
+                                continue
+                            days_till_expiration = round(time_diff.total_seconds() / 86400, 2)
+                            if days_till_expiration > 60:
+                                break
+
+                            options_chain = options.loc[stock, date]
+                            # new and updated options chains
+                            new_call_table = options_chain.loc['calls']
+                            new_put_table = options_chain.loc['puts']
+
+                            # old options chain in the database
+                            old_call_table = pd.read_sql(f'select * from "{stock} Calls {expiration}"',
+                                                         con=connection).set_index('strike')
+                            old_put_table = pd.read_sql(f'select * from "{stock} Puts {expiration}"',
+                                                        con=connection).set_index('strike')
+
+                            for index, row in new_call_table.iterrows():
+                                strike = row['strike']
+                                change_in_volume = row['volume'] - old_call_table.loc[strike]['volume']
+                                change_in_price = row['lastPrice'] - old_call_table.loc[strike]['lastPrice']
+                                if change_in_volume != 0:
+                                    # if volume increase and price goes down, we can assume investors are bailing from
+                                    # this strike, if volume increase and price goes up, we can assume movement into
+                                    # the specific strike
+                                    dictionary_of_options_volume['calls'].append([strike, change_in_volume, change_in_price])
+
+                            for index, row in new_put_table.iterrows():
+                                strike = row['strike']
+                                change_in_volume = row['volume'] - old_put_table.loc[strike]['volume']
+                                change_in_price = row['lastPrice'] - old_put_table.loc[strike]['lastPrice']
+                                if change_in_volume != 0:
+                                    dictionary_of_options_volume['puts'].append([strike, change_in_volume, change_in_price])
+
+                            print(dictionary_of_options_volume)
+                            change_in_options_volume[stock].append(dictionary_of_options_volume)
+
+        # begin analysis of the change in options volume
+        return change_in_options_volume
 
     # okay for now
-    def volume_analysis(self, tick_test, path):
-        with sqlite3.connect(self.path + 'quotes.db',
-                             detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES) as db:
-            one_minute_ago = dt.datetime.now() - dt.timedelta(minutes=1)
-            for stock in self.stock_tickers:
-                cur = db.execute(f"select * from quotes_{stock} where time > (?)", (one_minute_ago,))
-                self.quote_data[stock] = cur.fetchall()
-
+    def trade_analysis(self, tick_test, path):
         volume_terms_dict = {}
         with sqlite3.connect(self.path + path, detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES) as db:
             for stock in self.stock_tickers:
@@ -38,17 +93,15 @@ class stockAnalysis:
                 uptick = tick_test[stock][0]
                 downtick = tick_test[stock][1]
                 zerotick = tick_test[stock][2]
-
                 try:
-                    cur = db.execute(f"select rowid, * from trades_{stock} where time > (?)",
-                                     (self.quote_data[stock][-2][0],))
+                    # select all unclassified trades
+                    cur = db.execute(f"select rowid, * from trades_{stock} where direction = (?)", ('None',))
                     trade_elements = cur.fetchall()
-                    cursor = db.cursor()
 
+                    cursor = db.cursor()
                     self.quote_data[stock] = []
                     first_trade = trade_elements[0]
                     second_trade = trade_elements[1]
-
                     for index, row in enumerate(trade_elements.copy()):
                         # https://hashingit.com/elements/research-resources/1991-06-inferring-trade-direction.pdf
                         # The tick test is a technique which infers the direction of a trade by
@@ -61,34 +114,23 @@ class stockAnalysis:
                         # the trade is a zero-downtick. A trade is classified as a buy if it occurs on an
                         # uptick or a zero-uptick; otherwise it is classified as a sell.
                         try:
-                            # print(row)
-                            # print(uptick)
-                            # print(downtick)
-                            # print(zerotick)
                             if index == 0:
                                 previous_trade = first_trade
                                 current_trade = second_trade
-                                # do reverse tick test for the first item in the series
-                                # If the current trade is followed by a trade with a
-                                # higher (lower) price, the reverse tick test classifies the current trade as a sell
-                                # (buy). This method was used by Hasbrouck (1988) to classify trades at the
-                                # midpoint of the bid-ask spread.
+
                                 if first_trade[-1] == 'None':
                                     if second_trade[2] > first_trade[2]:
                                         downtick = True
-                                        cursor.execute(f"update trades_{stock} set direction = 'Sell' where rowid = (?)",
-                                                       (first_trade[0],))
+                                        cursor.execute(f"update trades_{stock} set direction = 'Sell' where rowid = (?)", (first_trade[0],))
                                         db.commit()
                                     elif second_trade[2] < first_trade[2]:
                                         uptick = True
-                                        cursor.execute(f"update trades_{stock} set direction = 'Buy' where rowid = (?)",
-                                                       (first_trade[0],))
+                                        cursor.execute(f"update trades_{stock} set direction = 'Buy' where rowid = (?)", (first_trade[0],))
                                         db.commit()
                                     elif second_trade[2] == first_trade[2]:
                                         downtick = True
                                         zerotick = True
-                                        cursor.execute(f"update trades_{stock} set direction = 'Sell' where rowid = (?)",
-                                                       (first_trade[0],))
+                                        cursor.execute(f"update trades_{stock} set direction = 'Sell' where rowid = (?)", (first_trade[0],))
                                         db.commit()
 
                             elif index < len(trade_elements):
@@ -126,7 +168,6 @@ class stockAnalysis:
                 cur = db.execute(f"select * from trades_{stock}")
                 trade_data = cur.fetchall()
                 for row in trade_data:
-                    # print(row)
                     # since we have already classified all of the trades as buys or sells, here we will analyze them
                     tradetime = row[0]
                     if tradetime > dt.datetime.now() - dt.timedelta(seconds=30):

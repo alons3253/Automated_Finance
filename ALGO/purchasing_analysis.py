@@ -4,6 +4,7 @@ import os
 
 
 # WIP
+# NEEDS TO BE TESTED
 class purchasingAnalysis:
     def __init__(self, stock_tickers, volume_terms_dict, buy_list, short_list):
         cwd = os.getcwd()
@@ -43,12 +44,15 @@ class purchasingAnalysis:
                     weak_sell.append(f'SELL 1 LOT OF {stock}')
                 elif order_flow < 0.5 and short_indicator == 'Bearish' and quote_data[stock] == 'Bearish':
                     sell.append(f'SHORT SELL 1 LOT OF {stock}')
-                elif order_flow < 0.5 and short_indicator == 'Very Bearish' and quote_data[stock] == 'Very Bearish':
+                elif order_flow < 0.5 and short_indicator == 'Very Bearish' and (quote_data[stock] == 'Very Bearish' or
+                                                                                 quote_data[stock] == 'Bearish'):
                     strong_sell.append(f'SELL LONG POSITION AND SHORT SELL {stock}')
             except IndexError:
                 pass
             try:
                 long_indicator = self.buy_list[stock][-1]
+                # add a clause that if we get the same bullish and very bullish indicators, we make the trade regardless
+                # of what yahoo finance rates the stock
 
                 if order_flow > 0.5 and (long_indicator == 'Bullish' and quote_data[stock] == 'Bullish') or \
                         (long_indicator == 'Neutral' or quote_data[stock] == 'Bullish') or \
@@ -56,7 +60,8 @@ class purchasingAnalysis:
                     weak_buy.append(f'COVER 1 LOT OF {stock}')
                 elif order_flow > 0.5 and long_indicator == 'Bullish' and quote_data[stock] == 'Bullish':
                     buy.append(f'BUY 1 LOT OF {stock}')
-                elif order_flow > 0.5 and long_indicator == 'Very Bullish' and quote_data[stock] == 'Very Bullish':
+                elif order_flow > 0.5 and long_indicator == 'Very Bullish' and (quote_data[stock] == 'Very Bullish' or
+                                                                                quote_data[stock] == 'Bullish'):
                     strong_buy.append(f'COVER SHORT POSITION AND GO LONG {stock}')
             except IndexError:
                 pass

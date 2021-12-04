@@ -4,6 +4,8 @@ import numpy as np
 import datetime as dt
 import time
 import os
+
+from ALGO.excel_formatting_module import ExcelFormatting
 """
 needs to be expanded and redone with individual tickers instead of the aggregate for a number of reasons
 1) i believe the aggregate indicators will be done away with soon
@@ -105,7 +107,10 @@ class technicalIndicators:
         data = data.round(decimals=2)
 
         for stock in self.stock_tickers:
-            dataframe = data[stock].tz_localize(None)
+            if len(self.stock_tickers) == 1:
+                dataframe = data.tz_localize(None)
+            else:
+                dataframe = data[stock].tz_localize(None)
             # ADX > 30 strong trend, 20 < ADX < 30 weak trend, ADX < 20, no trend
             dataframe = ADX(dataframe, 14)
 
@@ -281,5 +286,7 @@ class technicalIndicators:
             url = f"{self.cwd}\\Daily Stock Analysis\\Trades\\{stock} Intraday {dt.date.today()}.xlsx"
             with pd.ExcelWriter(url, engine='openpyxl') as writer:
                 dataframe.to_excel(writer, sheet_name=f'{stock} Intraday Trades')
+
+            ExcelFormatting(file_path=url).formatting()
 
         return self.ti_data

@@ -7,7 +7,6 @@ import requests
 import datetime as dt
 import csv
 
-
 from ALGO.stock_data_module import stockDataEngine
 
 
@@ -28,8 +27,6 @@ def get_tickers(tickers, api):
     data = r.json()['data']
     df = pd.DataFrame(data['rows'], columns=data['headers'])
 
-    # Drop all non United States Stocks
-    df = df[df.country == 'United States']
     df['marketCap'] = pd.to_numeric(df['marketCap'])
     df['volume'] = pd.to_numeric(df['volume'])
 
@@ -42,24 +39,21 @@ def get_tickers(tickers, api):
     df = df[df.volume > 2340000]
 
     # we should test these stocks to see if they are tradeable on alpaca
-    for index, iterrow in df.iterrows():
-        for i in range(len(sandp500tickers)):
-            ticker = iterrow['symbol']
-            if ticker == sandp500tickers[i]:
-                try:
-                    asset = api.get_asset(ticker)
-                    print(asset)
-                    if asset.tradable and asset.easy_to_borrow and asset.marginable and asset.shortable:
-                        tickers.append(ticker)
-                except Exception as error:
-                    print(error)
-                    continue
-    return tickers
+    assets = api.list_assets()
+
+    ticker_list = [asset.symbol for asset in assets if (asset.tradable and asset.easy_to_borrow and
+                                                        asset.marginable and asset.shortable)]
+
+    ticker_set = set(df['symbol']).intersection(ticker_list)
+    tickers = set(sandp500tickers).intersection(ticker_set)
+
+    return list(tickers)
 
 
 def api_calls(tickers):
     yf.pdr_override()
-    data = yf.download(tickers=tickers, threads=True, group_by='ticker', period="1mo")
+
+    data = yf.download(tickers=tickers, group_by='ticker', period="1mo")
     data = data.round(decimals=2)
 
     # drops invalid stocks
