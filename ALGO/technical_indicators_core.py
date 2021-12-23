@@ -4,8 +4,11 @@ import numpy as np
 import datetime as dt
 import time
 import os
+import logging
 
 from ALGO.excel_formatting_module import ExcelFormatting
+
+logger = logging.getLogger(__name__)
 """
 needs to be expanded and redone with individual tickers instead of the aggregate for a number of reasons
 1) i believe the aggregate indicators will be done away with soon

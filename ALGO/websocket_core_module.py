@@ -1,6 +1,9 @@
 import websocket
 from json import loads
 import datetime as dt
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class WebsocketBootStrapper:

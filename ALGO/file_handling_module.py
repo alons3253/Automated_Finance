@@ -3,13 +3,17 @@ import re
 import glob
 import os
 import psutil
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class filePruning:
     def __init__(self):
         self.today = datetime.date.today().strftime("%m-%d-%Y")
-        self.root_path = './Daily Stock Analysis'
-        self.dir_list = ['/Accum-Dist Ranks', '/Options', '/Stocks', '/Portfolio-Analysis', '/Trades']
+        self.cwd = os.getcwd()
+        self.root_path = self.cwd + r'\Daily Stock Analysis'
+        self.dir_list = [r'\Accum-Dist Ranks', r'\Options', r'\Stocks', r'\Portfolio-Analysis', r'\Trades']
 
     def initialize_directories(self):
         if not os.path.exists(self.root_path):
@@ -31,7 +35,7 @@ class filePruning:
                     date = datetime.datetime.strptime(re_match.group(), '%Y-%m-%d').date()
                     date_cutoff = datetime.date.today() - datetime.timedelta(days=7)
                     if date_cutoff > date:
-                        pruned_backup = str('./') + str(file)
+                        pruned_backup = str(file)
                         os.remove(pruned_backup)
                 except AttributeError:
                     continue

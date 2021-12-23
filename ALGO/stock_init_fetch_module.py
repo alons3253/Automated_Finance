@@ -6,11 +6,14 @@ import glob
 import requests
 import datetime as dt
 import csv
+import logging
 
 from ALGO.stock_data_module import stockDataEngine
 
+logger = logging.getLogger(__name__)
 
-def get_tickers(tickers, api):
+
+def get_tickers(api):
     table = pd.read_html('https://en.wikipedia.org/wiki/List_of_S%26P_500_companies')
     df = table[0]
     sandp500tickers = df['Symbol'].to_list()
@@ -105,7 +108,6 @@ def obv_score_array(stock_tickers):
 class APIbootstrap:
     def __init__(self, _api=None):
         self._api = _api
-        self._pruned_tickers = []
         self._file_date = dt.datetime.date(dt.datetime.now())
         cwd = os.getcwd()
         self._file_name = cwd + fr'\Daily Stock Analysis\Accum-Dist Ranks\\{self._file_date}_ACC_DIST_Ranked.csv'
@@ -136,7 +138,7 @@ class APIbootstrap:
                     pass
                 os.mkdir(self._stocks_folder)
 
-            stock_tickers = get_tickers(self._pruned_tickers, self._api)
+            stock_tickers = get_tickers(self._api)
             api_calls(stock_tickers)
             accum_dist_array = obv_score_array(stock_tickers)
 

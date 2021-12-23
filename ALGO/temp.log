@@ -1,0 +1,38 @@
+2021-12-22 17:24:16,227 - ALGO.db_initializer - DEBUG - Initialization of Databases
+2021-12-22 17:24:16,230 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): paper-api.alpaca.markets:443
+2021-12-22 17:24:16,439 - urllib3.connectionpool - DEBUG - https://paper-api.alpaca.markets:443 "GET /v2/account HTTP/1.1" 200 775
+2021-12-22 17:24:16,439 - root - DEBUG - A valid Alpaca trading account was found
+2021-12-22 17:24:16,489 - urllib3.connectionpool - DEBUG - https://paper-api.alpaca.markets:443 "GET /v2/account HTTP/1.1" 200 775
+2021-12-22 17:24:16,539 - urllib3.connectionpool - DEBUG - https://paper-api.alpaca.markets:443 "GET /v2/clock HTTP/1.1" 200 148
+2021-12-22 17:24:17,882 - ALGO.bond_yield_fetch_module - DEBUG - Initialization of bond gathering
+2021-12-22 17:24:17,882 - ALGO.db_initializer - DEBUG - Initialization of Databases
+2021-12-22 17:24:17,930 - root - DEBUG - information already fetched: ['LIBOR', 'T-Bond', 'Initial Quote']
+2021-12-22 17:24:17,930 - root - DEBUG - Initial Quote information for 2021-12-22 already exists
+2021-12-22 17:24:22,387 - root - DEBUG - T-bond information for 2021-12-22 already exists
+2021-12-22 17:24:22,388 - root - DEBUG - LIBOR information for the previous business day 2021-12-21 already exists
+2021-12-22 17:24:22,430 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): query2.finance.yahoo.com:443
+2021-12-22 17:24:22,431 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): query2.finance.yahoo.com:443
+2021-12-22 17:24:22,431 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): query2.finance.yahoo.com:443
+2021-12-22 17:24:22,657 - urllib3.connectionpool - DEBUG - https://query2.finance.yahoo.com:443 "GET /v8/finance/chart/CMCSA?range=1d&interval=1m&includePrePost=True&events=div%2Csplits HTTP/1.1" 200 None
+2021-12-22 17:24:22,657 - urllib3.connectionpool - DEBUG - https://query2.finance.yahoo.com:443 "GET /v8/finance/chart/PYPL?range=1d&interval=1m&includePrePost=True&events=div%2Csplits HTTP/1.1" 200 None
+2021-12-22 17:24:22,673 - urllib3.connectionpool - DEBUG - https://query2.finance.yahoo.com:443 "GET /v8/finance/chart/KMI?range=1d&interval=1m&includePrePost=True&events=div%2Csplits HTTP/1.1" 200 None
+2021-12-22 17:24:23,647 - root - DEBUG - Options gathering started
+2021-12-22 17:24:23,648 - root - DEBUG - Options gathering completed
+2021-12-22 17:24:23,649 - root - DEBUG - initial analysis function is entered
+2021-12-22 17:24:23,651 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): query2.finance.yahoo.com:443
+2021-12-22 17:24:24,978 - urllib3.connectionpool - DEBUG - https://query2.finance.yahoo.com:443 "GET /v7/finance/options/PYPL?getAllData=true&formatted=false&lang=en-US&region=US&corsDomain=finance.yahoo.com HTTP/1.1" 200 None
+2021-12-22 17:24:25,335 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): query2.finance.yahoo.com:443
+2021-12-22 17:24:25,679 - urllib3.connectionpool - DEBUG - https://query2.finance.yahoo.com:443 "GET /v7/finance/options/KMI?getAllData=true&formatted=false&lang=en-US&region=US&corsDomain=finance.yahoo.com HTTP/1.1" 200 None
+2021-12-22 17:24:25,761 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): query2.finance.yahoo.com:443
+2021-12-22 17:24:26,089 - urllib3.connectionpool - DEBUG - https://query2.finance.yahoo.com:443 "GET /v7/finance/options/CMCSA?getAllData=true&formatted=false&lang=en-US&region=US&corsDomain=finance.yahoo.com HTTP/1.1" 200 None
+2021-12-22 17:24:26,199 - root - DEBUG - DATABASE INTEGRITY CHECK FOR C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Databases\accounts.db: ok
+2021-12-22 17:24:26,200 - root - DEBUG - DATABASE INTEGRITY CHECK FOR C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Databases\indicators.db: ok
+2021-12-22 17:24:26,201 - root - DEBUG - DATABASE INTEGRITY CHECK FOR C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Databases\options.db: ok
+2021-12-22 17:24:26,202 - root - DEBUG - DATABASE INTEGRITY CHECK FOR C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Databases\quotes.db: ok
+2021-12-22 17:24:26,202 - root - DEBUG - DATABASE INTEGRITY CHECK FOR C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Databases\trades.db: ok
+2021-12-22 17:24:30,519 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): query2.finance.yahoo.com:443
+2021-12-22 17:24:30,521 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): query2.finance.yahoo.com:443
+2021-12-22 17:24:30,521 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): query2.finance.yahoo.com:443
+2021-12-22 17:24:30,725 - urllib3.connectionpool - DEBUG - https://query2.finance.yahoo.com:443 "GET /v8/finance/chart/CMCSA?range=1d&interval=1m&includePrePost=True&events=div%2Csplits HTTP/1.1" 200 None
+2021-12-22 17:24:30,754 - urllib3.connectionpool - DEBUG - https://query2.finance.yahoo.com:443 "GET /v8/finance/chart/PYPL?range=1d&interval=1m&includePrePost=True&events=div%2Csplits HTTP/1.1" 200 None
+2021-12-22 17:24:30,764 - urllib3.connectionpool - DEBUG - https://query2.finance.yahoo.com:443 "GET /v8/finance/chart/KMI?range=1d&interval=1m&includePrePost=True&events=div%2Csplits HTTP/1.1" 200 None

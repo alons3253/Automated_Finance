@@ -2,6 +2,9 @@ from clr import AddReference
 import datetime as dt
 import requests
 from bs4 import BeautifulSoup
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def spy_returns():
@@ -38,7 +41,6 @@ class stockDataEngine:
             initial_data[stock] = []
 
         length_of_information = len(initial_stock_info) // len(self.stock_tickers)
-
         for stock in self.stock_tickers:
             quote = {}
             for i in range(length_of_information):

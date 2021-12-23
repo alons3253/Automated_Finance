@@ -6,9 +6,11 @@ import openpyxl
 import concurrent.futures
 import os
 import sqlite3
-import time
+import logging
 
 from ALGO.excel_formatting_module import ExcelFormatting
+
+logger = logging.getLogger(__name__)
 
 
 class Options:
@@ -79,10 +81,10 @@ class Options:
     def thread_marshaller(self):
         with concurrent.futures.ThreadPoolExecutor(max_workers=len(self.stock_tickers)) as executor:
             for stock in self.stock_tickers:
-                #path = f'{self.cwd}\\Daily Stock Analysis\\Options\\{stock} Options Data {self.today.date()}.xlsx'
-                #db_path = f'{self.cwd}\\Databases\\options.db'
-                # insert a check if we already the initial fetch and pricing
-                executor.submit(self.initial_options, stock)
+                path = f'{self.cwd}\\Daily Stock Analysis\\Options\\{stock} Options Data {self.today.date()}.xlsx'
+                db_path = f'{self.cwd}\\Databases\\options.db'
+                if not os.path.isfile(path) or not os.path.isfile(db_path):
+                    executor.submit(self.initial_options, stock)
 
         return self.option_value
 
@@ -135,11 +137,12 @@ class Options:
             put_table = put_table.assign(option_value=0.00).set_index('strike')
             self.option_value[stock].append({str(exp): {'overvalued_call_options': 0, 'undervalued_call_options': 0,
                                                         'overvalued_put_options': 0, 'undervalued_put_options': 0}})
-
+            """
             calls_well_priced = 0
             total_calls = 0
             puts_well_priced = 0
             total_puts = 0
+            """
             ois_rate -= dividend  # dividend should be factored in
 
             for index, row in call_table.iterrows():
@@ -155,12 +158,12 @@ class Options:
                 call_table.at[index, 'option_value'] = round(option_price, 3)
                 spread = (row['bid'] + row['ask']) / 2
                 call_table.at[index, 'lastPrice'] = spread
-
+                """
                 error = ((option_price - spread) / spread)
                 if -0.05 < error < 0.05:
                     calls_well_priced += 1
                 total_calls += 1
-
+                """
                 if option_price > spread:
                     self.option_value[stock][i][str(exp)]['undervalued_call_options'] += 1
                 if option_price < spread:
@@ -180,11 +183,12 @@ class Options:
                 spread = (row['bid'] + row['ask']) / 2
                 put_table.at[index, 'lastPrice'] = spread
 
+                """
                 error = ((option_price - spread) / spread)
                 if -0.05 < error < 0.05:
                     puts_well_priced += 1
                 total_puts += 1
-
+                """
                 if option_price > spread:
                     self.option_value[stock][i][str(exp)]['undervalued_put_options'] += 1
                 if option_price < spread:
@@ -197,12 +201,14 @@ class Options:
             put_table.to_sql(name=f'{stock} Puts {exp}', con=connection, if_exists='replace')
 
             cursor = connection.cursor()
-            timestamp = dt.datetime.now()
-            cursor.execute("INSERT INTO timestamp (stock, time, expiration) VALUES(?, ?, ?)",
-                           (stock, timestamp, exp_time))
+            ts = dt.datetime.now()
+            if 60 <= days_till_expiration <= 90:
+                cursor.execute("INSERT INTO timestamp (stock, time, expiration) VALUES(?, ?, ?)", (stock, ts, exp_time))
+
             connection.commit()
             connection.close()
 
+            """
             try:
                 pct_well_priced = (calls_well_priced / total_calls) * 100
                 pct_well_priced_2 = (puts_well_priced / total_puts) * 100
@@ -212,10 +218,11 @@ class Options:
                       f"for {stock} options expiring {exp}")
             except Exception as e:
                 print(e)
-
+            """
             call_table.to_excel(writer, sheet_name=f'{stock} Calls {exp}')
+            logger.debug(f"Calls for {stock} expiring {exp} successfully outputted to Excel")
             put_table.to_excel(writer, sheet_name=f'{stock} Puts {exp}')
-
+            logger.debug(f"Puts for {stock} expiring {exp} successfully outputted to Excel")
         try:
             sheet = book['Sheet']
             book.remove(sheet)
@@ -226,4 +233,4 @@ class Options:
         book.save(url)
         book.close()
 
-        #ExcelFormatting(file_path=url).formatting()
+        ExcelFormatting(file_path=url).formatting()

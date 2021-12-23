@@ -5,6 +5,9 @@ import logging
 import alpaca_trade_api as trade_api
 from alpaca_trade_api.stream import URL
 import websocket
+import glob
+
+logger = logging.getLogger(__name__)
 
 
 class databaseInitializer:
@@ -14,6 +17,7 @@ class databaseInitializer:
         if not os.path.isdir(fr'{self.cwd}\Databases\\'):
             os.mkdir(fr'{self.cwd}\Databases\\')
         self.path = f'{self.cwd}\\Databases\\'
+        logger.debug("Initialization of Databases")
 
     def check_for_account_details(self):
         with sqlite3.connect(self.path + 'accounts.db') as db:
@@ -30,16 +34,16 @@ class databaseInitializer:
             try:
                 db.execute("select * from account_info")
             except IndexError:
-                logging.critical("Account Information was not found")
-                logging.critical("Input Alpaca Trading Key:")
+                logging.warning("Account Information was not found")
+                logging.warning("Input Alpaca Trading Key:")
                 alpaca_key = str(input())
-                logging.critical("Input Alpaca Trading Security Key:")
+                logging.warning("Input Alpaca Trading Security Key:")
                 alpaca_sec_key = str(input())
-                logging.critical("Input Finnhub Key:")
+                logging.warning("Input Finnhub Key:")
                 finnhub_key = str(input())
-                logging.critical("Input Alpaca Brokerage Key:")
+                logging.warning("Input Alpaca Brokerage Key:")
                 brokerage_key = str(input())
-                logging.critical("Input Alpaca Brokerage Security Key:")
+                logging.warning("Input Alpaca Brokerage Security Key:")
                 brokerage_sec_key = str(input())
 
                 while True:
@@ -136,7 +140,7 @@ class databaseInitializer:
                     db.commit()
                 data[stock] = []
 
-        print("Trade data saved to DB")
+        logging.debug("Trade data saved to DB")
         return data
 
     def generation_of_quote_database(self, file):
@@ -158,6 +162,9 @@ class databaseInitializer:
                             first_object_time = dt.datetime.strptime(cur.fetchone()[0], "%Y-%m-%d %H:%M:%S")
                             if dt.date.today() != first_object_time.date():
                                 cur.execute(f"drop table if exists quotes_{stock_split[1]}")
+                                db.commit()
+                                # safe to assume that if the quote table exists then the initial quote table does too
+                                cur.execute(f"drop table if exists initial_quote_{stock_split[1]}")
                                 db.commit()
                         except TypeError:
                             pass
@@ -184,6 +191,7 @@ class databaseInitializer:
                     if difference.total_seconds() > 3600:
                         db.execute(f"delete from quotes_{stock} where rowid = (?)", (row[0],))
                         db.commit()
+
             db.execute("vacuum")
             db.commit()
 
@@ -196,7 +204,7 @@ class databaseInitializer:
                     db.commit()
                 data[stock] = []
 
-        print("Quote data saved to DB")
+        logging.debug("Quote data saved to DB")
         return data
 
     def generation_of_indicators_database(self, file):
@@ -260,8 +268,36 @@ class databaseInitializer:
                     db.commit()
                 data[stock] = []
 
-        print("Indicator data saved to DB")
+        logging.debug("Indicator data saved to DB")
         return data
+
+    def initial_quote_insertion(self, file, initial_data=None):
+        if initial_data is None:
+            return
+        with sqlite3.connect(self.path + file) as db:
+            for stock in self.stock_tickers:
+                db.execute(f'''create table if not exists initial_quote_{stock} (
+                                    time TIMESTAMP NOT NULL,
+                                    beta DECIMAL NOT NULL,
+                                    dividend DECIMAL NOT NULL,
+                                    days_range TEXT NOT NULL,
+                                    one_year_range TEXT NOT NULL,
+                                    one_year_target DECIMAL NOT NULL,
+                                    previous_close DECIMAL NOT NULL,
+                                    DECIMAL TEXT NOT NULL,
+                                    P_E_ratio DECIMAL NOT NULL,
+                                    average_volume BIGINT NOT NULL
+                                    )''')
+                db.commit()
+
+                for element in initial_data[stock]:
+                    params = (element['time'], element['beta'], element['dividend'], element["day's range"],
+                              element['52 week range'], element['one year target'], element['previous close'],
+                              element['open'], element['P/E ratio'], element['average volume'])
+                    db.execute(f"insert into initial_quote_{stock} values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", params)
+                    db.commit()
+
+        logging.debug("Initial quote data saved to DB")
 
     def cleanup_options_database(self, file):
         # the timestamps table needs to be reset every time the program runs
@@ -290,3 +326,22 @@ class databaseInitializer:
             with sqlite3.connect(self.path + file) as db:
                 cursor = db.cursor()
                 cursor.execute("CREATE TABLE timestamp (stock text, time timestamp, expiration date)")
+
+    # this should check all dbs and should be ran after all dbs have been created
+    def verify_db_integrity(self):
+        db_directory = self.cwd + r'\Databases'
+        dbs = glob.glob(db_directory + r'\*.db')
+        troublesome_databases = []
+        for db in dbs:
+            try:
+                cursor = sqlite3.connect(db)
+                for r in cursor.execute("PRAGMA integrity_check;"):
+                    logging.debug(f"DATABASE INTEGRITY CHECK FOR {db}: {r[0]}")
+                    if r[0] != 'ok':
+                        troublesome_databases.append(db)
+                        os.remove(db)
+                        logging.debug(f"FAULT IN {db} DETECTED, FILE REMOVED")
+            except:
+                continue
+
+        return troublesome_databases

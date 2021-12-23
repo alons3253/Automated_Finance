@@ -3,10 +3,13 @@ import datetime as dt
 import numpy as np
 import time
 import os
+import logging
 
 from ALGO.stock_data_module import stockDataEngine, spy_returns
 from ALGO.bond_yield_fetch_module import bondYields
 from ALGO.excel_formatting_module import ExcelFormatting
+
+logger = logging.getLogger(__name__)
 
 
 def trade_settlement(activities_df, stock_tickers):

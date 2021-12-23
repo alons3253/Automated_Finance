@@ -3,6 +3,9 @@ import sqlite3
 import os
 import yahooquery
 import pandas as pd
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class stockAnalysis:
@@ -25,55 +28,55 @@ class stockAnalysis:
             expiration_dates = list(options.index.unique(level=1))
 
             cursor.execute(f'select * from timestamp where stock = (?)', (stock,))
+            timestamps = cursor.fetchall()
+            print(timestamps)
 
             for element in cursor.fetchall():
-                if element[0] == stock:
-                    time = dt.datetime.strptime(element[1], "%Y-%m-%d %H:%M:%S.%f")
-                    print(time)
-                    if time + dt.timedelta(minutes=5) < dt.datetime.now():
-                        change_in_options_volume[stock] = []
-                        for date in expiration_dates:
-                            dictionary_of_options_volume = {'calls': [], 'puts': []}
+                time = dt.datetime.strptime(element[1], "%Y-%m-%d %H:%M:%S.%f")
+                if time + dt.timedelta(minutes=5) < dt.datetime.now():
+                    change_in_options_volume[stock] = []
+                    for date in expiration_dates:
+                        dictionary_of_options_volume = {'calls': [], 'puts': []}
 
-                            expiration = date.to_pydatetime().date()
-                            exp_time = dt.datetime.combine(expiration, dt.time(15, 0))
-                            time_diff = exp_time - dt.datetime.now()
-                            if time_diff.days < 0:
-                                continue
-                            days_till_expiration = round(time_diff.total_seconds() / 86400, 2)
-                            if days_till_expiration > 60:
-                                break
+                        expiration = date.to_pydatetime().date()
+                        exp_time = dt.datetime.combine(expiration, dt.time(15, 0))
+                        time_diff = exp_time - dt.datetime.now()
+                        if time_diff.days < 0:
+                            continue
+                        days_till_expiration = round(time_diff.total_seconds() / 86400, 2)
+                        if days_till_expiration > 60:
+                            break
 
-                            options_chain = options.loc[stock, date]
-                            # new and updated options chains
-                            new_call_table = options_chain.loc['calls']
-                            new_put_table = options_chain.loc['puts']
+                        options_chain = options.loc[stock, date]
+                        # new and updated options chains
+                        new_call_table = options_chain.loc['calls']
+                        new_put_table = options_chain.loc['puts']
 
-                            # old options chain in the database
-                            old_call_table = pd.read_sql(f'select * from "{stock} Calls {expiration}"',
-                                                         con=connection).set_index('strike')
-                            old_put_table = pd.read_sql(f'select * from "{stock} Puts {expiration}"',
-                                                        con=connection).set_index('strike')
+                        # old options chain in the database
+                        old_call_table = pd.read_sql(f'select * from "{stock} Calls {expiration}"',
+                                                     con=connection).set_index('strike')
+                        old_put_table = pd.read_sql(f'select * from "{stock} Puts {expiration}"',
+                                                    con=connection).set_index('strike')
 
-                            for index, row in new_call_table.iterrows():
-                                strike = row['strike']
-                                change_in_volume = row['volume'] - old_call_table.loc[strike]['volume']
-                                change_in_price = row['lastPrice'] - old_call_table.loc[strike]['lastPrice']
-                                if change_in_volume != 0:
-                                    # if volume increase and price goes down, we can assume investors are bailing from
-                                    # this strike, if volume increase and price goes up, we can assume movement into
-                                    # the specific strike
-                                    dictionary_of_options_volume['calls'].append([strike, change_in_volume, change_in_price])
+                        for index, row in new_call_table.iterrows():
+                            strike = row['strike']
+                            change_in_volume = row['volume'] - old_call_table.loc[strike]['volume']
+                            change_in_price = row['lastPrice'] - old_call_table.loc[strike]['lastPrice']
+                            if change_in_volume != 0:
+                                # if volume increase and price goes down, we can assume investors are bailing from
+                                # this strike, if volume increase and price goes up, we can assume movement into
+                                # the specific strike
+                                dictionary_of_options_volume['calls'].append([strike, change_in_volume, change_in_price])
 
-                            for index, row in new_put_table.iterrows():
-                                strike = row['strike']
-                                change_in_volume = row['volume'] - old_put_table.loc[strike]['volume']
-                                change_in_price = row['lastPrice'] - old_put_table.loc[strike]['lastPrice']
-                                if change_in_volume != 0:
-                                    dictionary_of_options_volume['puts'].append([strike, change_in_volume, change_in_price])
+                        for index, row in new_put_table.iterrows():
+                            strike = row['strike']
+                            change_in_volume = row['volume'] - old_put_table.loc[strike]['volume']
+                            change_in_price = row['lastPrice'] - old_put_table.loc[strike]['lastPrice']
+                            if change_in_volume != 0:
+                                dictionary_of_options_volume['puts'].append([strike, change_in_volume, change_in_price])
 
-                            print(dictionary_of_options_volume)
-                            change_in_options_volume[stock].append(dictionary_of_options_volume)
+                        print(dictionary_of_options_volume)
+                        change_in_options_volume[stock].append(dictionary_of_options_volume)
 
         # begin analysis of the change in options volume
         return change_in_options_volume

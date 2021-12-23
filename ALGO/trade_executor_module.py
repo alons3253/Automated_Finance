@@ -1,7 +1,10 @@
 from clr import AddReference
 import datetime as dt
+import logging
 
 from ALGO.stock_data_module import stockDataEngine
+
+logger = logging.getLogger(__name__)
 
 
 def order_checker(api, analysis, current_stock_position):
