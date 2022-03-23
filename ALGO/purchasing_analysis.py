@@ -1,6 +1,5 @@
 import datetime as dt
 import sqlite3
-import os
 import logging
 
 logger = logging.getLogger(__name__)
@@ -9,8 +8,7 @@ logger = logging.getLogger(__name__)
 # WIP
 # NEEDS TO BE TESTED
 class purchasingAnalysis:
-    def __init__(self, stock_tickers, volume_terms_dict, buy_list, short_list):
-        cwd = os.getcwd()
+    def __init__(self, stock_tickers, volume_terms_dict, buy_list, short_list, cwd):
         self.path = fr'{cwd}\Databases\\'
         self.stock_tickers = stock_tickers
         self.volume_dict = volume_terms_dict

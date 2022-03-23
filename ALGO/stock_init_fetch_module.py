@@ -62,8 +62,8 @@ def api_calls(tickers):
     # drops invalid stocks
     data = data.dropna(how='all', axis=0)
 
-    for i in tickers:
-        data[i].to_csv(f'../ALGO/Daily Stock Analysis/Stocks/{i}.csv')
+    for ticker in tickers:
+        data[ticker].to_csv(f'../ALGO/Daily Stock Analysis/Stocks/{ticker}.csv')
 
 
 def obv_score_array(stock_tickers):
@@ -106,28 +106,20 @@ def obv_score_array(stock_tickers):
 
 
 class APIbootstrap:
-    def __init__(self, _api=None):
+    def __init__(self, _api=None, cwd=None):
         self._api = _api
         self._file_date = dt.datetime.date(dt.datetime.now())
-        cwd = os.getcwd()
-        self._file_name = cwd + fr'\Daily Stock Analysis\Accum-Dist Ranks\\{self._file_date}_ACC_DIST_Ranked.csv'
-        self._stocks_folder = cwd + r"\Daily Stock Analysis\Stocks"
+        self._file_name = fr'{cwd}\\Daily Stock Analysis\Accum-Dist Ranks\\{self._file_date}_ACC_DIST_Ranked.csv'
+        self._stocks_folder = fr"{cwd}\\Daily Stock Analysis\Stocks"
 
     def get_tickers(self):
-        flag = False
-        if os.path.isfile(self._file_name):
-            with open(self._file_name) as f:
-                line_count = 0
-                for line in f:
-                    line_count += 1
-            if line_count > 1:
-                print('OBV data exists for today')
+        try:
+            if len(pd.read_csv(self._file_name)) > 3:
+                logging.info('OBV data exists for today')
             else:
-                flag = True
-        else:
-            flag = True
-
-        if flag:
+                raise FileNotFoundError
+        except FileNotFoundError:
+            logging.debug("OBV data not found")
             try:
                 shutil.rmtree(self._stocks_folder)
                 os.mkdir(self._stocks_folder)

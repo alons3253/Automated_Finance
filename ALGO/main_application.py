@@ -131,38 +131,30 @@ def initial_fetch():
         last_business_day = dt.datetime.today() - BDay(1)
     # reason for this confusingness is because the us treasury department puts out new rates at 3pm CST every day,
     # libor does not update todays rates until the next day
-    tbond_business_day = dt.datetime.strftime(last_business_day, '%Y-%m-%d')
-    libor_business_day = dt.datetime.strftime(dt.datetime.today() - BDay(1), '%Y-%m-%d')
+    tbond_business_day = dt.datetime.strftime(last_business_day, '%m-%d-%Y')
+    libor_business_day = dt.datetime.strftime(dt.datetime.today() - BDay(1), '%m-%d-%Y')
 
     cwd = os.getcwd()
     fetched_information = []
     libor_yields = None
 
-    libor_files = glob.glob(cwd + r"\Daily Stock Analysis\Bonds\LIBOR Yields (last updated *).xlsx")
+    libor_files = glob.glob(cwd + r"\Daily Stock Analysis\Bonds\LIBOR Yields (*).xlsx")
     if len(libor_files) > 0:
         for file in libor_files:
             try:
-                libor_df = pd.read_excel(cwd + fr"\Daily Stock Analysis\Bonds\LIBOR Yields "
-                                               fr"(last updated {libor_business_day}).xlsx")
-                libor_list = libor_df[libor_business_day].tolist()
-                libor_yields = []
-                for element in libor_list:
-                    if element == '-':
-                        continue
-                    libor_yields.append(element[:-2])
+                libor_df = pd.read_excel(cwd + fr"\Daily Stock Analysis\Bonds\LIBOR Yields ({libor_business_day}).xlsx")
+                libor_yields = tuple(libor_df[libor_business_day].to_list())
                 fetched_information.append('LIBOR')
             except FileNotFoundError:
                 os.remove(file)
 
-    bond_files = glob.glob(cwd + r"\Daily Stock Analysis\Bonds\US T-Bond Yields (last updated *).xlsx")
+    bond_files = glob.glob(cwd + r"\Daily Stock Analysis\Bonds\US T-Bond Yields (*).xlsx")
     if len(bond_files) > 0:
         for file in bond_files:
             try:
                 bond_df = pd.read_excel(cwd + f"\\Daily Stock Analysis\\Bonds\\US T-Bond Yields "
-                                              f"(last updated {tbond_business_day}).xlsx")
-
-                bond_df = bond_df.set_index(['Unnamed: 0'])
-                bond_list = bond_df.loc[tbond_business_day, ['1 Mo', '2 Mo', '3 Mo', '6 Mo', '1 Yr', '2 Yr']].tolist()
+                                              f"({tbond_business_day}).xlsx").set_index('Date')
+                treasury_bond_yields = tuple(bond_df.iloc[-1].to_list())
                 fetched_information.append('T-Bond')
             except FileNotFoundError:
                 os.remove(file)
@@ -211,12 +203,14 @@ def initial_fetch():
 
     try:
         if 'Initial Quote' not in fetched_information:
-            db_bootstrap.initial_quote_insertion(file='quotes.db', initial_data=initial_quote_fetch)
+            db_bootstrap.initial_quote_insertion(initial_quote_fetch, 'quotes.db')
 
         logging.debug("Options gathering started")
         options_bootstrapper = Options(stock_tickers=stock_tickers, initial_data=initial_quote_fetch,
-                                       quote_data=stock_quotes, rate=libor_yields, bbond=bond_bootstrap)
-        # function changed to a yield from in order to wait and make sure everything is done and priced
+                                       quote_data=stock_quotes, rate=libor_yields, cwd=current_directory, bbond=bond_bootstrap)
+        # have to do this and handle all of the multithreading in the module instead of trying to multithread in here
+        # also, i am just going to do all of the database checks in the options thread, this function should only
+        # be ran once a day, but that doesnt mean i can just delete the file and start from scratch
         options_bootstrapper.thread_marshaller()
         logging.debug("Options gathering completed")
 
@@ -225,7 +219,7 @@ def initial_fetch():
         logging.error(f"Exception occurred {error}", exc_info=True)
 
 
-# WIP
+# WIP and experimental as of 2/14/2022
 def initial_analysis():
     print("LIBOR Yields:", libor_yields)
     print("Initial Quote Fetch:", initial_quote_fetch)
@@ -253,12 +247,121 @@ def initial_analysis():
     print('---------------------------------------------')
     print('Options Analysis')
     print(stock_tickers)
-    max_pain = options_bootstrapper.options_fetch(initial_quote_fetch)
-    print(max_pain)
 
+    # we should consider "strike pinning" aka options strikes with high open interest
+    max_pain, strike_pins = options_bootstrapper.options_fetch(stock_quote_data)
     # we want to project a position size over the course of the day
+    # we don't want to risk more than 10% of the account on the total size of a position
+    # on a singular stock, this should be a customizable option eventually
+    if dt.datetime.combine(dt.date.today(), market_close) - dt.datetime.now() < dt.timedelta(hours=1):
+        logging.warning("Warning, one hour to market close, reducing maximum position size to 25%\n")
+        max_account_risk = .25 * (.1 * account_balance)
+    else:
+        max_account_risk = .1 * account_balance
+
+    with sqlite3.connect(os.getcwd() + r"\Databases\positions.db") as db:
+        db.execute("CREATE TABLE if not exists projected_positions (stock text, time timestamp, size decimal, rating text)")
+        db.commit()
+
+        projected_positions = db.execute("select * from projected_positions").fetchall()
+        # WIP: overwrite previous position projection if it was done a while ago
+
+        if len(projected_positions) == 0:
+            # determine maximum size of position
+            # here is some of the basic logic to work off of, if the stock is volatile (which it already kind of is
+            # because the only stock tickers that we trade off of have high OBV ) then we want to have a smaller
+            # position in order to mitigate huge price swings, to the contrary, if we have a not so volatile stock then
+            # we need to have a larger position size
+            # this function is meant to be ran at the beginning of the day but i will include checks to see what time of
+            # day it is.
+            # we will work off of the initial information gathered from the stock, but later on in the
+            for stock in stock_tickers:
+                stock_price = stock_quote_data[stock][-1]['current price']
+                try:
+                    intraday_trades_df = pd.read_excel(f'Daily Stock Analysis/Trades/{stock} Intraday '
+                                                       f'{dt.date.today()}.xlsx', index_col=0)
+
+                    intraday_high = intraday_trades_df['High'].max()
+                    intraday_low = intraday_trades_df['Low'].min()
+                    #intraday_range = f'{intraday_high} - {intraday_low}'
+
+                    mean = intraday_trades_df['Adj Close'].mean()
+                    volatility = intraday_trades_df['Adj Close'].var()
+
+                    percentage_from_top_range = ((intraday_high - stock_price) / stock_price)
+                    percentage_from_bottom_range = ((stock_price - intraday_low) / stock_price)
+
+                    technicals = ti_data[stock][-1]
+                    sigma = volatility / stock_price
+
+                    positive_direction = technicals['buy']
+                    negative_direction = technicals['sell']
+                    neutral_direction = technicals['neutral']
+                    # have a voting system that judges the likelihood of price movements
+                    # this is mostly just meant to reinforce the indicators that we have fetched earlier by factoring
+                    # in trends
+                    if percentage_from_bottom_range > percentage_from_top_range:
+                        # top end of range
+                        if stock_price > mean:
+                            if stock_price + (sigma * stock_price) > intraday_high:
+                                positive_direction += 2
+                    else:
+                        if stock_price < mean:
+                            if stock_price - (sigma * stock_price) < intraday_low:
+                                negative_direction += 2
+
+                    if technicals['momentum'] == 'strong positive':
+                        if technicals['trending'] == 'strong':
+                            positive_direction += 2
+                        else:
+                            positive_direction += 1
+                    elif technicals['momentum'] == 'positive':
+                        if technicals['trending'] == 'strong':
+                            positive_direction += 1
+                    elif technicals['momentum'] == 'strong negative':
+                        if technicals['trending'] == 'strong':
+                            negative_direction += 2
+                        else:
+                            negative_direction += 1
+                    elif technicals['momentum'] == 'negative':
+                        if technicals['trending'] == 'strong':
+                            negative_direction += 1
+                    else:
+                        neutral_direction += 1
+
+                    # if stock price is significantly above max pain, we can expect price to reduce and vice versa
+                    if max_pain[stock] > (1.02 * stock_price):
+                        positive_direction += 1
+                    elif max_pain[stock] < (.98 * stock_price):
+                        negative_direction += 1
+
+                    if positive_direction > (negative_direction + neutral_direction):
+                        position_size = 0.8 * max_account_risk
+                        rating = 'expected long'
+                    elif negative_direction > (positive_direction + neutral_direction):
+                        position_size = 0.8 * max_account_risk
+                        rating = 'expected short'
+                    elif positive_direction > negative_direction:
+                        position_size = 0.6 * max_account_risk
+                        rating = 'probable long'
+                    elif negative_direction > positive_direction:
+                        position_size = 0.6 * max_account_risk
+                        rating = 'probable short'
+                    else:
+                        position_size = 0.4 * max_account_risk
+                        rating = 'neutral'
+
+                    db.execute("insert into projected_positions values (?, ?, ?, ?)", (stock, dt.datetime.now(),
+                                                                                       position_size, rating))
+                    db.commit()
+
+                except Exception as e:
+                    logging.error(e)
+
+    return strike_pins
 
 
+# okay
 def cleanup():
     # needs to remove the far dated elements in the sql databases
     db_bootstrap.cleanup_of_trade_database('trades.db')
@@ -266,21 +369,22 @@ def cleanup():
     db_bootstrap.cleanup_of_indicators_database('indicators.db')
 
 
+# reenabled on 3/17/2022
 def data_analysis():
-    analysis_module = stockAnalysis(stock_tickers, stock_quote_data, ti_data, indicator_votes)
+    analysis_module = stockAnalysis(stock_tickers, stock_quote_data, ti_data, indicator_votes, current_directory)
     b_l, s_l = analysis_module.indicator_analysis(stock_shortlist, stock_buylist, 'indicators.db')
     volume_dict = analysis_module.trade_analysis(tick_test, 'trades.db')
     option_analysis = analysis_module.option_analysis()
     print('change in options volume:')
     print(option_analysis)
 
-    # WIP
     for stock in stock_tickers:
         if volume_dict[stock]['30_seconds']['shares_bought'] == volume_dict[stock]['1_minute']['shares_bought'] or \
                 volume_dict[stock]['1_minute']['shares_bought'] == volume_dict[stock]['2_minutes']['shares_bought']:
             continue
         else:
-            s_b, b, w_b, s_s, s, w_s = purchasingAnalysis([stock], volume_dict, b_l, s_l).analysis_operations(stock_quote_data)
+            s_b, b, w_b, s_s, s, w_s = purchasingAnalysis([stock], volume_dict, b_l, s_l,
+                                                          current_directory).analysis_operations(stock_quote_data)
             trade_bootstrap.trade_execution(account_balance, s_b, b, w_b, s_s, s, w_s)
         stock_quote_data[stock] = []
 
@@ -315,22 +419,37 @@ if __name__ == '__main__':
 
     # check google for an internet connection
     conn = httplib.HTTPConnection(r"www.google.com", timeout=5)
+    no_internet_boolean = None
+    current_directory = os.getcwd()
     try:
         conn.request("HEAD", "/")
-        conn.close()
     except Exception as e:
+        logging.critical("You need to have an internet connection to use the trading client")
+        no_internet_boolean = True
+    finally:
         conn.close()
-        logging.critical("You need to have an internet connection!")
-        sys.exit(0)
 
-    file_handler_module = filePruning()
-    file_handler_module.initialize_directories()
-    file_handler_module.prune_files()
-    file_handler_module.excel_handler()
+        logging.critical("Performing maintenance checks on databases")
+        file_handler_module = filePruning(current_directory)
+        file_handler_module.initialize_directories()
+        file_handler_module.prune_files()
+        file_handler_module.excel_handler()
 
-    verifyFileIntegrity().check_files()
+        verifyFileIntegrity(current_directory).check_files()
 
-    api, alpaca_data_keys, finnhub_token, brokerage_keys = databaseInitializer().check_for_account_details()
+        db_initializer = databaseInitializer(cwd=current_directory)
+
+        troublesome_dbs = db_initializer.verify_db_integrity()
+        if len(troublesome_dbs) > 0:
+            logging.warning(f"Integrity issues detected with the following databases, {troublesome_dbs} "
+                            f"they have been removed.")
+        else:
+            logging.critical("No database issues were detected")
+
+        if no_internet_boolean:
+            sys.exit(0)
+
+    api, alpaca_data_keys, finnhub_token, brokerage_keys = db_initializer.check_for_account_details()
 
     account = api.get_account()
     clock = api.get_clock()
@@ -362,7 +481,7 @@ if __name__ == '__main__':
 
     stock_tickers = []
     if choice == 1:
-        stock_tickers = APIbootstrap(_api=api).get_tickers()
+        stock_tickers = APIbootstrap(_api=api, cwd=current_directory).get_tickers()
     if choice == 2:
         print("Input stock tickers separated by a space, the quotes and trades for each stock will be streamed")
         print("When you are done entering tickers, press Enter to show the quotes for each stock in order")
@@ -435,9 +554,10 @@ if __name__ == '__main__':
             # boot-strappers, these serve the purpose of initializing classes so the multi-threading works fine
             stock_data_bootstrap = stockDataEngine(stock_tickers, stock_quote_data)
             websocket_bootstrap = WebsocketBootStrapper(stock_tickers, trade_data, finnhub_token)
-            finnhub_tech_bootstrap = technicalIndicators(stock_tickers, ti_data)
-            bond_bootstrap = bondYields()
-            db_bootstrap = databaseInitializer(stock_tickers)
+            finnhub_tech_bootstrap = technicalIndicators(stock_tickers, ti_data, current_directory)
+
+            bond_bootstrap = bondYields(dt.date.today(), current_directory)
+            db_bootstrap = databaseInitializer(stock_tickers, current_directory)
             db_bootstrap.cleanup_options_database('options.db')
             trade_bootstrap = tradeExecution(api, stock_tickers)
             # end boot-strappers
@@ -447,7 +567,7 @@ if __name__ == '__main__':
             options_bootstrapper, initial_quote_fetch, stock_quote_data, libor_yields, ti_data = initial_fetch()
             websocket_boot()
             # important function
-            initial_analysis()
+            strike_pins = initial_analysis()
 
             while True:
                 db_bootstrap.generation_of_trade_database('trades.db')
@@ -495,12 +615,12 @@ if __name__ == '__main__':
                 ti_data = db_bootstrap.insertion_into_indicators_database(ti_data, 'indicators.db')
 
                 # commented out for now as we focus on the initial function
-                # data_analysis()
+                data_analysis()
                 cleanup()
                 # check_for_market_close()
                 time.sleep(5)
 
     # START OF PORTFOLIO ANALYSIS
-    portfolio_bootstrap = portfolioAnalysis(api=api)
+    portfolio_bootstrap = portfolioAnalysis(api=api, cwd=current_directory)
     portfolio_bootstrap.main()
     # end of program

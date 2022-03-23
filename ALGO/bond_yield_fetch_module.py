@@ -2,9 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 import openpyxl
-import os
 import datetime as dt
-from dateutil.parser import parse
 import logging
 
 from ALGO.excel_formatting_module import ExcelFormatting
@@ -26,11 +24,11 @@ and concludes that OIS rates should be used in all situations.
 
 
 class bondYields:
-    def __init__(self):
+    def __init__(self, todays_date, cwd):
         logger.debug("Initialization of bond gathering")
         self.bond_yields = {}
-        self.todays_date = dt.datetime.today()
-        self.cwd = os.getcwd()
+        self.todays_date = todays_date
+        self.cwd = cwd
 
     # preferred rate for pricing derivatives
     # the rate at which you can borrow/lend cash is the rate you need to consider
@@ -41,7 +39,6 @@ class bondYields:
         # first step is to multiply the overnight rate for the period in which the swap applies
         # the overnight lending rate is typically the federal funds rate or the SOFR (secured overnight financing rate)
         floating_rate_leg = ((overnight_rate * days_to_expiry) / 360) + 1
-
 
         # fixed rate is the LIBOR rate as it is the least risky rate available
         # this also should pretty much always be larger
@@ -63,41 +60,48 @@ class bondYields:
 
     # LIBOR rates as used as the floating leg in the OIS calculation
     def LIBOR_yields(self):
-        with requests.get("https://www.global-rates.com/en/interest-rates/libor/american-dollar/american-dollar.aspx",
-                          stream=True) as r:
-            soup = BeautifulSoup(r.text, 'lxml')
-            libor_list = [entry.text for entry in soup.find_all('td', {'align': 'center'})]
+        # this is also an option, although i think its much more reliant on website structure to get the specific table
+        tables = pd.read_html("https://www.global-rates.com/en/interest-rates/libor/american-dollar/american-dollar.aspx")
+        libor_df = None
+        for i, table in enumerate(tables):
+            # this will sort out the correct dataframe we need
+            try:
+                libor_df = table.set_index([0], drop=True)
+                if libor_df.empty or libor_df.isnull().values.any() or len(libor_df.index) < 2:
+                    raise Exception
+                libor_df = libor_df.rename(columns=libor_df.iloc[0]).drop(libor_df.index[0])
 
-        libor_2dlist = []
-        row = []
-        date = libor_list[1]
-        for i in range(1, 81):
-            element = libor_list[i]
-            if i <= 5:
-                element = dt.datetime.strptime(element, '%m-%d-%Y').strftime('%Y-%m-%d')
-            row.append(element)
-            if i % 5 == 0:
-                libor_2dlist.append(row)
-                row = []
+                dates = list(libor_df.columns)
+                # this is a bit cringeworthy but works well, swaps unknown values
+                for index, column in libor_df.copy().iteritems():
+                    date_int = dates.index(column.name)
+                    try:
+                        # try and use the right date's value if there is an unknown yield
+                        libor_df[dates[date_int]][libor_df[dates[date_int]] == '-'] = libor_df[dates[date_int + 1]]
+                    except IndexError:
+                        try:
+                            libor_df[dates[date_int]][libor_df[dates[date_int]] == '-'] = libor_df[dates[date_int - 1]]
+                        except IndexError:
+                            libor_df[dates[date_int]][libor_df[dates[date_int]] == '-'] = "0.00000 %"
+                        pass
 
-        libor_df = pd.DataFrame.from_records(libor_2dlist)
-        libor_refitted_df = libor_df.set_axis(libor_2dlist[0], axis='columns')
-        libor_refitted_df = libor_refitted_df.iloc[1:, :]
-        terms = ['USD-LIBOR-OVERNIGHT', 'USD-LIBOR-1-WEEK', 'USD-LIBOR-2-WEEKS', 'USD-LIBOR-1-MONTH',
-                 'USD-LIBOR-2-MONTHS', 'USD-LIBOR-3-MONTHS', 'USD-LIBOR-4-MONTHS', 'USD-LIBOR-5-MONTHS',
-                 'USD-LIBOR-6-MONTHS', 'USD-LIBOR-7-MONTHS', 'USD-LIBOR-8-MONTHS', 'USD-LIBOR-9-MONTHS',
-                 'USD-LIBOR-10-MONTHS', 'USD-LIBOR-11-MONTHS', 'USD-LIBOR-12-MONTHS']
-        libor_refitted_df.index = terms
+                libor_df[libor_df.columns[0:]] = libor_df[libor_df.columns[0:]].replace('\xa0%', '',
+                                                                                        regex=True).astype(float)
+                dt.datetime.strptime(libor_df.columns[0], "%m-%d-%Y")
+                break
+            except Exception as e:
+                continue
 
-        date = pd.to_datetime(date).date()
-        url = self.cwd + fr"\Daily Stock Analysis\Bonds\LIBOR Yields (last updated {date}).xlsx"
+        date = libor_df.columns[0]
+
+        url = self.cwd + fr"\Daily Stock Analysis\Bonds\LIBOR Yields ({date}).xlsx"
         wb = openpyxl.Workbook()
         wb.save(url)
         book = openpyxl.load_workbook(url)
         writer = pd.ExcelWriter(url, engine='openpyxl')
         writer.book = book
         writer.sheets = dict((ws.title, ws) for ws in book.worksheets)
-        libor_refitted_df.to_excel(writer, sheet_name=f"LIBOR yields for {date}")
+        libor_df.to_excel(writer, sheet_name=f"LIBOR yields for {date}")
         try:
             sheet = book['Sheet']
             book.remove(sheet)
@@ -109,50 +113,35 @@ class bondYields:
         book.close()
 
         ExcelFormatting(file_path=url).formatting()
+        libor_yields = tuple(libor_df[date].to_list())
 
-        for i in range(4):
-            try:
-                overnight_rate = float(libor_refitted_df.iloc[0, i].split()[0])
-                one_week_rate = float(libor_refitted_df.iloc[1, i].split()[0])
-                one_month_rate = float(libor_refitted_df.iloc[3, i].split()[0])
-                two_month_rate = float(libor_refitted_df.iloc[4, i].split()[0])
-                three_month_rate = float(libor_refitted_df.iloc[5, i].split()[0])
-                six_month_rate = float(libor_refitted_df.iloc[8, i].split()[0])
-                twelve_month_rate = float(libor_refitted_df.iloc[14, i].split()[0])
-                libor_yields = (round(overnight_rate, 6), round(one_week_rate, 6), round(one_month_rate, 6),
-                                round(two_month_rate, 6), round(three_month_rate, 6), round(six_month_rate, 6),
-                                round(twelve_month_rate, 6))
-                logging.debug(libor_yields)
-                return libor_yields
-            except ValueError:
-                continue
+        logging.debug(f"London Interbank Offering Rates (LIBOR): {libor_yields}")
+        return libor_yields
 
+    # note that this the bank discount rate
     def treasury_bond_yields(self):
-        with requests.get("https://www.treasury.gov/resource-center/data-chart-center/interest-"
-                          "rates/Pages/TextView.aspx?data=yield", stream=True) as r:
-            soup = BeautifulSoup(r.text, 'lxml')
-            bond_list = [entry.text for entry in soup.find_all('td', {'class': 'text_view_data'})]
+        month = f"{self.todays_date.month:02d}" if self.todays_date.month < 10 else self.todays_date.month
 
-        date = None
-        for i in range(len(bond_list)):
-            if i % 13 == 0:
-                date = parse(bond_list[i].replace("/", '-')).date()
-                self.bond_yields[date] = []
-                continue
-            self.bond_yields[date].append(bond_list[i])
+        bonddf = pd.read_html(f"https://home.treasury.gov/resource-center/data-chart-center/interest-rates/Text"
+                              f"View?typdaily_treasury_yield_curve&field_tdr_date_value_"
+                              f"month={self.todays_date.year}{month}")[0]
 
-        bond_df = pd.DataFrame.from_dict(self.bond_yields).T
-        bond_df = bond_df.rename(columns={0: '1 Mo', 1: '2 Mo', 2: '3 Mo', 3: '6 Mo', 4: '1 Yr', 5: '2 Yr',
-                                          6: '3 Yr', 7: '5 Yr', 8: '7 Yr', 9: '10 Yr', 10: '20 Yr', 11: '30 Yr'})
+        bonddf['Date'] = bonddf['Date'].str.replace("/", '-')
+        bond_df = bonddf.set_index('Date', drop=True)
 
-        url = self.cwd + f"\\Daily Stock Analysis\\Bonds\\US T-Bond Yields (last updated {date}).xlsx"
+        bond_df = bond_df[['4 WEEKS BANK DISCOUNT', '13 WEEKS BANK DISCOUNT', '26 WEEKS BANK DISCOUNT',
+                          '52 WEEKS BANK DISCOUNT']]
+
+        last_updated_date = bond_df.tail(1).index.item()
+
+        url = self.cwd + f"\\Daily Stock Analysis\\Bonds\\US T-Bond Yields ({last_updated_date}).xlsx"
         wb = openpyxl.Workbook()
         wb.save(url)
         book = openpyxl.load_workbook(url)
         writer = pd.ExcelWriter(url, engine='openpyxl')
         writer.book = book
         writer.sheets = dict((ws.title, ws) for ws in book.worksheets)
-        bond_df.to_excel(writer, sheet_name=f"Treasury Bonds for {date}")
+        bond_df.to_excel(writer, sheet_name=f"T-Bonds, {last_updated_date}")
         try:
             sheet = book['Sheet']
             book.remove(sheet)
@@ -166,15 +155,8 @@ class bondYields:
         ExcelFormatting(file_path=url).formatting()
         logging.debug("Treasury bond excel sheet saved successfully")
 
-        onemonthyield = float(bond_df.iloc[-1, 0]) / 100
-        twomonthyield = float(bond_df.iloc[-1, 1]) / 100
-        threemonthyield = float(bond_df.iloc[-1, 2]) / 100
-        sixmonthyield = float(bond_df.iloc[-1, 3]) / 100
-        oneyryield = float(bond_df.iloc[-1, 4]) / 100
-        twoyryield = float(bond_df.iloc[-1, 5]) / 100
+        yield_tuple = tuple(bond_df.loc[last_updated_date])
 
-        yield_tuple = (round(onemonthyield, 6), round(twomonthyield, 6), round(threemonthyield, 6),
-                       round(sixmonthyield, 6), round(oneyryield, 6), round(twoyryield, 6))
         logging.debug(yield_tuple)
 
         return yield_tuple

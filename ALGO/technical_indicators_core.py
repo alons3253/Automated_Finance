@@ -3,19 +3,11 @@ import pandas as pd
 import numpy as np
 import datetime as dt
 import time
-import os
 import logging
 
 from ALGO.excel_formatting_module import ExcelFormatting
 
 logger = logging.getLogger(__name__)
-"""
-needs to be expanded and redone with individual tickers instead of the aggregate for a number of reasons
-1) i believe the aggregate indicators will be done away with soon
-2) i would rather do the math on the indicators by myself and pick and choose which ones will be measured
-3) i believe there will be a higher accuracy if i do it this way and plus its a bit more rigorous than
-just simply pulling it all from one source.
-"""
 
 
 def STOCH(df):
@@ -96,11 +88,10 @@ def ROC(df, n=14):
 
 
 class technicalIndicators:
-    def __init__(self, stock_tickers, ti_data):
-        self.resolutions = ['1', '5', '15', '30', '60', 'D', 'W', 'M']
+    def __init__(self, stock_tickers, ti_data, cwd):
         self.stock_tickers = stock_tickers
         self.ti_data = ti_data
-        self.cwd = os.getcwd()
+        self.cwd = cwd
 
     def tech_indicator(self):
         yf.pdr_override()
@@ -115,6 +106,8 @@ class technicalIndicators:
             else:
                 dataframe = data[stock].tz_localize(None)
             # ADX > 30 strong trend, 20 < ADX < 30 weak trend, ADX < 20, no trend
+            dataframe = dataframe[dataframe['Open'].notnull()]
+
             dataframe = ADX(dataframe, 14)
 
             # simple moving averages
@@ -143,13 +136,17 @@ class technicalIndicators:
             # Rate of Change (momentum)
             dataframe = ROC(dataframe)
 
+            # 3/12/2022 i dont think these lines are necessary
+            # probably get 4:00 am as the time
+            #four_am = dt.datetime.combine(dt.date.today(), dt.time(4, 0))
+            #adx = np.argmax(abs(dataframe['ADX'].index - four_am))
+            #print(adx)
+
+            # there's no way we select nan values doing it this way
             dataframe = dataframe.round(decimals=2)
             dataframe = dataframe.dropna()
-            # probably get 4:00 am as the time
-            four_am = dt.datetime.combine(dt.date.today(), dt.time(4, 0))
-            adx = np.argmax(abs(dataframe['ADX'].index - four_am))
+            last_valid_row = dataframe.loc[dataframe.index[-1]]
 
-            last_valid_row = dataframe.loc[dataframe.index[adx]]
             b = 0
             n = 0
             s = 0
@@ -164,12 +161,16 @@ class technicalIndicators:
                 TREND = 'strong'
 
             rate_of_change = last_valid_row['ROC']
-            if rate_of_change > 0.2:
+            if rate_of_change > 0.6:
                 momentum = 'strong positive'
                 b += 1
-            elif rate_of_change < -0.2:
+            elif rate_of_change > 0.2:
+                momentum = 'positive'
+            elif rate_of_change < -0.6:
                 momentum = 'strong negative'
                 s += 1
+            elif rate_of_change < -0.2:
+                momentum = 'negative'
             else:
                 momentum = 'neutral'
                 n += 1

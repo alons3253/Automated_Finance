@@ -1,6 +1,5 @@
 import datetime as dt
 import sqlite3
-import os
 import yahooquery
 import pandas as pd
 import logging
@@ -9,43 +8,43 @@ logger = logging.getLogger(__name__)
 
 
 class stockAnalysis:
-    def __init__(self, stock_tickers, quote_data, ti_data, indicator_votes):
-        self.cwd = os.getcwd()
+    def __init__(self, stock_tickers, quote_data, ti_data, indicator_votes, cwd):
+        self.cwd = cwd
         self.path = fr'{self.cwd}\Databases\\'
         self.stock_tickers = stock_tickers
         self.quote_data = quote_data
         self.ti_data = ti_data
         self.indicator_votes = indicator_votes
 
+    # fixed on 3/17/2022
     def option_analysis(self):
-        connection = sqlite3.connect(f'{self.cwd}\\Databases\\options.db')
-        cursor = connection.cursor()
-
+        logging.debug("Entering options analysis function (untested as of 2/14/2022)")
         change_in_options_volume = {}
-        for stock in self.stock_tickers:
-            query = yahooquery.Ticker([stock], asynchronous=True)
-            options = query.option_chain
-            expiration_dates = list(options.index.unique(level=1))
 
-            cursor.execute(f'select * from timestamp where stock = (?)', (stock,))
-            timestamps = cursor.fetchall()
-            print(timestamps)
+        with sqlite3.connect(f'{self.cwd}\\Databases\\options.db') as db:
+            for stock in self.stock_tickers:
+                query = yahooquery.Ticker([stock], asynchronous=True)
+                options = query.option_chain
+                expiration_dates = []
 
-            for element in cursor.fetchall():
-                time = dt.datetime.strptime(element[1], "%Y-%m-%d %H:%M:%S.%f")
+                old_options_tables = db.execute(f"SELECT name from sqlite_master where name like '{stock}%'").fetchall()
+                cursor = db.cursor()
+                cursor.execute(f'select * from timestamp where stock = (?)', (stock,))
+                timestamps = cursor.fetchall()
+
+                # we need to analyze the change in options, do it in about 5 minute increments because of resources
+                # calculations that shouldnt be ran every 30 seconds for example
+                # once we have done this, replace the options chains and timestamps in the existing options.db
+                for element in old_options_tables:
+                    date = element[0].split(' ')[-1]
+                    if date not in expiration_dates:
+                        expiration_dates.append(date)
+
+                time = dt.datetime.strptime(timestamps[-1][1], "%Y-%m-%d %H:%M:%S.%f")
                 if time + dt.timedelta(minutes=5) < dt.datetime.now():
-                    change_in_options_volume[stock] = []
                     for date in expiration_dates:
+                        change_in_options_volume[stock] = []
                         dictionary_of_options_volume = {'calls': [], 'puts': []}
-
-                        expiration = date.to_pydatetime().date()
-                        exp_time = dt.datetime.combine(expiration, dt.time(15, 0))
-                        time_diff = exp_time - dt.datetime.now()
-                        if time_diff.days < 0:
-                            continue
-                        days_till_expiration = round(time_diff.total_seconds() / 86400, 2)
-                        if days_till_expiration > 60:
-                            break
 
                         options_chain = options.loc[stock, date]
                         # new and updated options chains
@@ -53,10 +52,8 @@ class stockAnalysis:
                         new_put_table = options_chain.loc['puts']
 
                         # old options chain in the database
-                        old_call_table = pd.read_sql(f'select * from "{stock} Calls {expiration}"',
-                                                     con=connection).set_index('strike')
-                        old_put_table = pd.read_sql(f'select * from "{stock} Puts {expiration}"',
-                                                    con=connection).set_index('strike')
+                        old_call_table = pd.read_sql(f'select * from "{stock} Calls {date}"', con=db).set_index('strike')
+                        old_put_table = pd.read_sql(f'select * from "{stock} Puts {date}"',  con=db).set_index('strike')
 
                         for index, row in new_call_table.iterrows():
                             strike = row['strike']
@@ -66,23 +63,28 @@ class stockAnalysis:
                                 # if volume increase and price goes down, we can assume investors are bailing from
                                 # this strike, if volume increase and price goes up, we can assume movement into
                                 # the specific strike
-                                dictionary_of_options_volume['calls'].append([strike, change_in_volume, change_in_price])
+                                dictionary_of_options_volume['calls'].append(
+                                    [strike, change_in_volume, change_in_price])
 
                         for index, row in new_put_table.iterrows():
                             strike = row['strike']
                             change_in_volume = row['volume'] - old_put_table.loc[strike]['volume']
-                            change_in_price = row['lastPrice'] - old_put_table.loc[strike]['lastPrice']
+                            change_in_price = round(row['lastPrice'] - old_put_table.loc[strike]['lastPrice'], 6)
                             if change_in_volume != 0:
-                                dictionary_of_options_volume['puts'].append([strike, change_in_volume, change_in_price])
+                                dictionary_of_options_volume['puts'].append(
+                                    [strike, change_in_volume, change_in_price])
 
                         print(dictionary_of_options_volume)
                         change_in_options_volume[stock].append(dictionary_of_options_volume)
 
         # begin analysis of the change in options volume
+        logging.debug("Exiting experimental options update function")
         return change_in_options_volume
 
     # okay for now
     def trade_analysis(self, tick_test, path):
+        logging.debug("entering experimental trade analysis function (as of 2/14/2022)")
+
         volume_terms_dict = {}
         with sqlite3.connect(self.path + path, detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES) as db:
             for stock in self.stock_tickers:

@@ -11,6 +11,11 @@ from ALGO.excel_formatting_module import ExcelFormatting
 
 logger = logging.getLogger(__name__)
 
+"""
+I believe that this module is fully functional however it has not been ran in months, so a few things may have broke
+since the last time it was known to be functional in roughly the summer of 2021
+"""
+
 
 def trade_settlement(activities_df, stock_tickers):
     trade_book = {}
@@ -156,14 +161,14 @@ def data_to_excel(data, sheet_name, cwd):
 
 
 class portfolioAnalysis:
-    def __init__(self, api=None):
+    def __init__(self, api=None, cwd=None):
         pd.options.mode.chained_assignment = None
         self.days = 0
         self.activities_df = None
         self.open_tickers = None
         self.open_position_catalog = None
         self.api = api
-        self.cwd = os.getcwd()
+        self.cwd = cwd
 
     def main(self):
         while True:
