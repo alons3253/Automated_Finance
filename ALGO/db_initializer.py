@@ -156,15 +156,11 @@ class databaseInitializer:
     def cleanup_of_trade_database(self, file):
         with sqlite3.connect(self.path + file) as db:
             for stock in self.stock_tickers:
-                cur = db.execute(f"select rowid, * from trades_{stock}")
-                for row in cur.fetchall():
-                    time = dt.datetime.strptime(row[1], '%Y-%m-%d %H:%M:%S.%f')
-                    difference = dt.datetime.now() - time
-                    # delete trades from 8 hours ago
-                    if difference.total_seconds() > 3600:
-                        db.execute(f"delete from trades_{stock} where rowid = (?)", (row[0],))
-                        db.commit()
-                        logging.debug(f"trades_{stock} cleaned in trades.db due to {difference} having elapsed")
+                db.execute(f"delete from trades_{stock} where time < (?)",
+                           ((dt.datetime.now() - dt.timedelta(minutes=30)),))
+                db.commit()
+                logging.debug(f"trades_{stock} cleaned in trades.db due to 30 minutes having elapsed")
+
             # deletes empty rows
             db.execute("vacuum")
             db.commit()
@@ -233,15 +229,10 @@ class databaseInitializer:
     def cleanup_of_quote_database(self, file):
         with sqlite3.connect(self.path + file) as db:
             for stock in self.stock_tickers:
-                cur = db.execute(f"select rowid, * from quotes_{stock}")
-                for row in cur.fetchall():
-                    time = dt.datetime.strptime(row[1], '%Y-%m-%d %H:%M:%S')
-                    difference = dt.datetime.now() - time
-                    # delete quotes from 1 hour ago
-                    if difference.total_seconds() > 3600:
-                        db.execute(f"delete from quotes_{stock} where rowid = (?)", (row[0],))
-                        db.commit()
-                        logging.debug(f"table quotes_{stock} cleaned in quotes.db due to {difference} having elapsed")
+                db.execute(f"delete from quotes_{stock} where time < (?)",
+                           ((dt.datetime.now() - dt.timedelta(minutes=60)),))
+                db.commit()
+                logging.debug(f"table quotes_{stock} cleaned in quotes.db due to 1 hour having elapsed")
             db.execute("vacuum")
             db.commit()
 

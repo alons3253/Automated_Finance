@@ -260,13 +260,19 @@ def initial_analysis():
         max_account_risk = .1 * account_balance
 
     with sqlite3.connect(os.getcwd() + r"\Databases\positions.db") as db:
-        db.execute("CREATE TABLE if not exists projected_positions (stock text, time timestamp, size decimal, rating text)")
+        db.execute("CREATE TABLE if not exists projected_positions (stock text, time timestamp, "
+                   "size decimal, rating text)")
         db.commit()
 
-        projected_positions = db.execute("select * from projected_positions").fetchall()
-        # WIP: overwrite previous position projection if it was done a while ago
+        # this should remove all elements from yesterday
+        projected_positions = db.execute("select * from projected_positions where time > (?)",
+                                         ((dt.datetime.now() - dt.timedelta(hours=1)),)).fetchall()
 
         if len(projected_positions) == 0:
+            # truncate the table
+            db.execute("delete from projected_positions;")
+            db.commit()
+
             # determine maximum size of position
             # here is some of the basic logic to work off of, if the stock is volatile (which it already kind of is
             # because the only stock tickers that we trade off of have high OBV ) then we want to have a smaller
@@ -396,8 +402,8 @@ if __name__ == '__main__':
     # Add stdout handler, with level INFO
     console = logging.StreamHandler(sys.stdout)
     console.setLevel(logging.INFO)
-    formater = logging.Formatter('%(name)-13s: %(levelname)-8s %(message)s')
-    console.setFormatter(formater)
+    formatter = logging.Formatter('%(name)-13s: %(levelname)-8s %(message)s')
+    console.setFormatter(formatter)
     logging.getLogger().addHandler(console)
 
     # Add file rotating handler, with level DEBUG
@@ -406,8 +412,8 @@ if __name__ == '__main__':
     rotatingHandler = logging.handlers.RotatingFileHandler(filename='temp.log', maxBytes=(50*1024*1024),
                                                            backupCount=5, mode='w')
     rotatingHandler.setLevel(logging.DEBUG)
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    rotatingHandler.setFormatter(formatter)
+    formatter2 = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    rotatingHandler.setFormatter(formatter2)
     logging.getLogger().addHandler(rotatingHandler)
 
     log = logging.getLogger("app." + __name__)

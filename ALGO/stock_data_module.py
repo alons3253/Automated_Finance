@@ -45,6 +45,7 @@ class stockDataEngine:
             quote = {}
             for i in range(length_of_information):
                 elem = initial_stock_info[i].replace(',', '')
+                elem = elem.replace('N/A', '')
                 if i == 1:
                     delimiter1 = '('
                     delimiter2 = ')'
@@ -57,22 +58,22 @@ class stockDataEngine:
                         dividend = float(div_string) / 100
                         elem = round(dividend, 4)
                     quote["dividend"] = elem
-                if i == 2:
-                    quote["day's range"] = elem if not elem == 'N/A' else elem
-                if i == 3:
-                    quote["52 week range"] = elem if not elem == 'N/A' else elem
-                if i == 4:
-                    quote["previous close"] = float(elem) if not elem == 'N/A' else elem
-                if i == 5:
-                    quote["open"] = float(elem) if not elem == 'N/A' else elem
-                if i == 6:
-                    quote["P/E ratio"] = float(elem) if not elem == 'N/A' else elem
-                if i == 7:
-                    quote["average volume"] = int(elem) if not elem == 'N/A' else elem
-                if i == 8:
-                    quote["one year target"] = float(elem) if not elem == 'N/A' else elem
-                if i == 9:
-                    quote["beta"] = float(elem) if not elem == 'N/A' else elem
+                elif i == 2:
+                    quote["day's range"] = elem if elem != '' else Exception
+                elif i == 3:
+                    quote["52 week range"] = elem if elem != '' else Exception
+                elif i == 4:
+                    quote["previous close"] = float(elem) if elem != '' else Exception
+                elif i == 5:
+                    quote["open"] = float(elem) if elem != '' else Exception
+                elif i == 6:
+                    quote["P/E ratio"] = float(elem) if elem != '' else Exception
+                elif i == 7:
+                    quote["average volume"] = int(elem) if elem != '' else Exception
+                elif i == 8:
+                    quote["one year target"] = float(elem) if elem != '' else Exception
+                elif i == 9:
+                    quote["beta"] = float(elem)  if elem != '' else Exception
                     quote["time"] = dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                     initial_data[stock].append(quote)
                     continue
@@ -80,24 +81,29 @@ class stockDataEngine:
         return initial_data
 
     def quote_data_processor(self):
-        scraped_stock_info = self.scrape_client.Scraper(self.stock_tickers)
-        length_of_information = len(scraped_stock_info) // len(self.stock_tickers)
+        try:
+            scraped_stock_info = self.scrape_client.Scraper(self.stock_tickers)
+            length_of_information = len(scraped_stock_info) // len(self.stock_tickers)
 
-        for stock in self.stock_tickers:
-            quote = {}
-            for i in range(length_of_information):
-                elem = scraped_stock_info[i].replace(',', '')
-                if i == 1:
-                    quote['current price'] = float(elem) if not elem == 'N/A' else elem
-                if i == 2:
-                    quote['indicator'] = elem
-                if i == 3:
-                    quote['volume'] = int(elem) if not elem == 'N/A' else elem
-                if i == 4:
-                    quote['bid'] = elem
-                if i == 5:
-                    quote['ask'] = elem
-                    quote['time'] = dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                    self.quote_data[stock].append(quote)
-            scraped_stock_info = scraped_stock_info[length_of_information:]
+            for stock in self.stock_tickers:
+                quote = {}
+                for i in range(length_of_information):
+                    elem = scraped_stock_info[i].replace(',', '')
+                    elem = elem.replace('N/A', '')
+                    if i == 1:
+                        quote['current price'] = float(elem)
+                    elif i == 2:
+                        quote['indicator'] = elem if elem != '' else Exception
+                    elif i == 3:
+                        quote['volume'] = int(elem)
+                    elif i == 4:
+                        quote['bid'] = elem if elem != '' else Exception
+                    elif i == 5:
+                        quote['ask'] = elem if elem != '' else Exception
+                        quote['time'] = dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                        self.quote_data[stock].append(quote)
+                scraped_stock_info = scraped_stock_info[length_of_information:]
+        except Exception as e:
+            logger.debug(f"error in stock data function: {e}")
+            self.quote_data_processor()
         return self.quote_data
