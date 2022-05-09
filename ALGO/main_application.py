@@ -558,14 +558,14 @@ if __name__ == '__main__':
             # end initialization of variables
 
             # boot-strappers, these serve the purpose of initializing classes so the multi-threading works fine
-            stock_data_bootstrap = stockDataEngine(stock_tickers, stock_quote_data)
+            stock_data_bootstrap = stockDataEngine(stock_tickers, stock_quote_data, current_directory)
             websocket_bootstrap = WebsocketBootStrapper(stock_tickers, trade_data, finnhub_token)
             finnhub_tech_bootstrap = technicalIndicators(stock_tickers, ti_data, current_directory)
 
             bond_bootstrap = bondYields(dt.date.today(), current_directory)
             db_bootstrap = databaseInitializer(stock_tickers, current_directory)
             db_bootstrap.cleanup_options_database('options.db')
-            trade_bootstrap = tradeExecution(api, stock_tickers)
+            trade_bootstrap = tradeExecution(api, stock_tickers, current_directory)
             # end boot-strappers
             #######################################################################################################
             print("Starting Initial Fetch, this may take several minutes")

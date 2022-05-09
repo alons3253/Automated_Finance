@@ -184,8 +184,8 @@ class Options:
                 executor.submit(self.initial_options, stock)
 
     def initial_options(self, stock):
-        handle = ctypes.cdll.LoadLibrary(r"C:\Users\fabio\source\repos\CallPricingDll\CallPricing"
-                                         r"Dll\x64\Release\CallPricingDll.dll")
+        handle = ctypes.cdll.LoadLibrary(fr"{self.cwd}\Binaries\CallPricingDll.dll")
+        #r"C:\Users\fabio\source\repos\CallPricingDll\CallPricingDll\x64\Release\CallPricingDll.dll")
 
         handle.CallPricing.argtypes = [ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float]
         handle.CallPricing.restype = ctypes.c_double

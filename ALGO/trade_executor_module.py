@@ -27,11 +27,13 @@ def order_checker(api, analysis, current_stock_position):
 
 # not 100% to my liking and needs to be tested
 class tradeExecution:
-    def __init__(self, api, tickers):
+    def __init__(self, api, tickers, cwd):
         self.api = api
         self.stock_tickers = tickers
-        AddReference(r"C:\Users\fabio\source\repos\Main Trade Executor Class Library\Main Trade Executor Class Lib"
-                     r"rary\bin\Release\Main Trade Executor Class Library.dll")
+        self.cwd = cwd
+        AddReference(fr"{cwd}\Binaries\Main Trade Executor Class Library")
+        #AddReference(r"C:\Users\fabio\source\repos\Main Trade Executor Class Library\Main Trade Executor Class Lib"
+        #             r"rary\bin\Release\Main Trade Executor Class Library.dll")
         import CSharpTradeExecutor
         self.trader = CSharpTradeExecutor.BracketOrders()
 
@@ -70,7 +72,7 @@ class tradeExecution:
         for stock in self.stock_tickers:
             quote_data[stock] = []
 
-        quote_data = stockDataEngine(self.stock_tickers, quote_data).quote_data_processor()
+        quote_data = stockDataEngine(self.stock_tickers, quote_data, self.cwd).quote_data_processor()
 
         for analysis in strong_buy:
             try:

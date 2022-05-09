@@ -2,7 +2,6 @@ import pandas as pd
 import datetime as dt
 import numpy as np
 import time
-import os
 import logging
 
 from ALGO.stock_data_module import stockDataEngine, spy_returns
@@ -349,12 +348,12 @@ class portfolioAnalysis:
         quote_data = {}
         for stock in self.stock_tickers:
             quote_data[stock] = []
-        data_engine = stockDataEngine(self.stock_tickers, quote_data)
+        data_engine = stockDataEngine(self.stock_tickers, quote_data, self.cwd)
 
         init_data = data_engine.initial_quote_data_fetch()
         quote_data = data_engine.quote_data_processor()
         spyreturn = float(spy_returns())
-        bond_object = bondYields()
+        bond_object = bondYields(self.cwd, dt.date.today())
         bond_yields = bond_object.treasury_bond_yields()
         riskfreerate = float(bond_yields[0])
 

@@ -26,10 +26,10 @@ def spy_returns():
 
 
 class stockDataEngine:
-    def __init__(self, stock_tickers, quote_data):
+    def __init__(self, stock_tickers, quote_data, cwd):
         self.stock_tickers = stock_tickers
-        AddReference(r"C:\Users\fabio\source\repos\Webscraper Class Library\Webscraper "
-                     r"Class Library\bin\Debug\Webscraper Class Library.dll")
+        AddReference(fr"{cwd}\Binaries\Webscraper Class Library.dll")
+        #r"C:\Users\fabio\source\repos\Webscraper Class Library\Webscraper Class Library\bin\Debug\Webscraper Class Library.dll")
         import CSharpwebscraper
         self.scrape_client = CSharpwebscraper.Webscraper()
         self.quote_data = quote_data
@@ -85,6 +85,7 @@ class stockDataEngine:
             scraped_stock_info = self.scrape_client.Scraper(self.stock_tickers)
             length_of_information = len(scraped_stock_info) // len(self.stock_tickers)
 
+            print(scraped_stock_info)
             for stock in self.stock_tickers:
                 quote = {}
                 for i in range(length_of_information):
@@ -105,5 +106,4 @@ class stockDataEngine:
                 scraped_stock_info = scraped_stock_info[length_of_information:]
         except Exception as e:
             logger.debug(f"error in stock data function: {e}")
-            self.quote_data_processor()
         return self.quote_data

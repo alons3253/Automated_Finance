@@ -111,6 +111,7 @@ class APIbootstrap:
         self._file_date = dt.datetime.date(dt.datetime.now())
         self._file_name = fr'{cwd}\\Daily Stock Analysis\Accum-Dist Ranks\\{self._file_date}_ACC_DIST_Ranked.csv'
         self._stocks_folder = fr"{cwd}\\Daily Stock Analysis\Stocks"
+        self.cwd = cwd
 
     def get_tickers(self):
         try:
@@ -159,7 +160,7 @@ class APIbootstrap:
 
                 for stock in stock_tickers:
                     try:
-                        stockDataEngine(stock_tickers=stock, quote_data=None)
+                        stockDataEngine(stock_tickers=stock, quote_data=None, cwd=self.cwd)
                     except Exception as e:
                         print(f"Error Found with Tickers! {e}")
                         lines = []

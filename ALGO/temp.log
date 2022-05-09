@@ -1,0 +1,183 @@
+2022-05-09 16:17:26,826 - root - CRITICAL - Performing maintenance checks on databases
+2022-05-09 16:17:27,357 - ALGO.verify_file_integrity - DEBUG - Error: Excel xlsx file; not supported, file "LIBOR Yields (05-06-2022).xlsx" is being removed
+2022-05-09 16:17:27,358 - ALGO.verify_file_integrity - DEBUG - Error: Excel xlsx file; not supported, file "US T-Bond Yields (05-09-2022).xlsx" is being removed
+2022-05-09 16:17:27,359 - ALGO.verify_file_integrity - DEBUG - Error: Excel xlsx file; not supported, file "ADM Options Data 2022-05-09.xlsx" is being removed
+2022-05-09 16:17:27,360 - ALGO.verify_file_integrity - DEBUG - Error: Excel xlsx file; not supported, file "EXPD Options Data 2022-05-09.xlsx" is being removed
+2022-05-09 16:17:27,361 - ALGO.verify_file_integrity - DEBUG - Error: Excel xlsx file; not supported, file "NRG Options Data 2022-05-09.xlsx" is being removed
+2022-05-09 16:17:27,362 - ALGO.verify_file_integrity - DEBUG - Error: Excel xlsx file; not supported, file "ADM Intraday 2022-05-09.xlsx" is being removed
+2022-05-09 16:17:27,363 - ALGO.verify_file_integrity - DEBUG - Error: Excel xlsx file; not supported, file "EXPD Intraday 2022-05-09.xlsx" is being removed
+2022-05-09 16:17:27,363 - ALGO.verify_file_integrity - DEBUG - Error: Excel xlsx file; not supported, file "NRG Intraday 2022-05-09.xlsx" is being removed
+2022-05-09 16:17:27,364 - ALGO.db_initializer - DEBUG - Initialization of Databases
+2022-05-09 16:17:27,365 - root - DEBUG - DATABASE INTEGRITY CHECK FOR C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Databases\accounts.db: ok
+2022-05-09 16:17:27,366 - root - DEBUG - DATABASE INTEGRITY CHECK FOR C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Databases\indicators.db: ok
+2022-05-09 16:17:27,367 - root - DEBUG - DATABASE INTEGRITY CHECK FOR C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Databases\options.db: ok
+2022-05-09 16:17:27,368 - root - DEBUG - DATABASE INTEGRITY CHECK FOR C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Databases\positions.db: ok
+2022-05-09 16:17:27,368 - root - DEBUG - DATABASE INTEGRITY CHECK FOR C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Databases\quotes.db: ok
+2022-05-09 16:17:27,369 - root - DEBUG - DATABASE INTEGRITY CHECK FOR C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Databases\trades.db: ok
+2022-05-09 16:17:27,369 - root - CRITICAL - No database issues were detected
+2022-05-09 16:17:27,372 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): paper-api.alpaca.markets:443
+2022-05-09 16:17:27,675 - urllib3.connectionpool - DEBUG - https://paper-api.alpaca.markets:443 "GET /v2/account HTTP/1.1" 200 764
+2022-05-09 16:17:27,678 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): paper-api.alpaca.markets:443
+2022-05-09 16:17:27,825 - urllib3.connectionpool - DEBUG - https://paper-api.alpaca.markets:443 "GET /v2/account HTTP/1.1" 200 764
+2022-05-09 16:17:27,825 - root - DEBUG - A valid Alpaca trading account was found
+2022-05-09 16:17:27,874 - urllib3.connectionpool - DEBUG - https://paper-api.alpaca.markets:443 "GET /v2/account HTTP/1.1" 200 764
+2022-05-09 16:17:27,917 - urllib3.connectionpool - DEBUG - https://paper-api.alpaca.markets:443 "GET /v2/clock HTTP/1.1" 200 147
+2022-05-09 16:17:31,426 - root - INFO - OBV data exists for today
+2022-05-09 16:17:31,465 - ALGO.bond_yield_fetch_module - DEBUG - Initialization of bond gathering
+2022-05-09 16:17:31,465 - ALGO.db_initializer - DEBUG - Initialization of Databases
+2022-05-09 16:17:31,488 - root - DEBUG - information already fetched: ['Initial Quote']
+2022-05-09 16:17:31,488 - root - DEBUG - Initial Quote information for 2022-05-09 already exists
+2022-05-09 16:17:35,164 - root - DEBUG - C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Daily Stock Analysis\Bonds\US T-Bond Yields (05-09-2022).xlsx is being formatted
+2022-05-09 16:17:36,151 - root - DEBUG - formatting for C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Daily Stock Analysis\Bonds\US T-Bond Yields (05-09-2022).xlsx is finished
+2022-05-09 16:17:36,151 - root - DEBUG - Treasury bond excel sheet saved successfully
+2022-05-09 16:17:36,152 - root - DEBUG - (0.49, 0.92, 1.39, 1.89)
+2022-05-09 16:17:37,990 - root - DEBUG - C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Daily Stock Analysis\Bonds\LIBOR Yields (05-06-2022).xlsx is being formatted
+2022-05-09 16:17:39,219 - root - DEBUG - formatting for C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Daily Stock Analysis\Bonds\LIBOR Yields (05-06-2022).xlsx is finished
+2022-05-09 16:17:39,219 - root - DEBUG - London Interbank Offering Rates (LIBOR): (0.81857, 0.84214, 1.40186, 1.96457, 2.69471)
+2022-05-09 16:17:39,284 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): query2.finance.yahoo.com:443
+2022-05-09 16:17:39,285 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): query2.finance.yahoo.com:443
+2022-05-09 16:17:39,285 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): query2.finance.yahoo.com:443
+2022-05-09 16:17:39,429 - urllib3.connectionpool - DEBUG - https://query2.finance.yahoo.com:443 "GET /v8/finance/chart/EXPD?range=1d&interval=1m&includePrePost=True&events=div%2Csplits HTTP/1.1" 200 None
+2022-05-09 16:17:39,488 - urllib3.connectionpool - DEBUG - https://query2.finance.yahoo.com:443 "GET /v8/finance/chart/NRG?range=1d&interval=1m&includePrePost=True&events=div%2Csplits HTTP/1.1" 200 None
+2022-05-09 16:17:39,519 - urllib3.connectionpool - DEBUG - https://query2.finance.yahoo.com:443 "GET /v8/finance/chart/ADM?range=1d&interval=1m&includePrePost=True&events=div%2Csplits HTTP/1.1" 200 None
+2022-05-09 16:17:39,906 - root - DEBUG - C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Daily Stock Analysis\Trades\ADM Intraday 2022-05-09.xlsx is being formatted
+2022-05-09 16:17:40,867 - root - DEBUG - formatting for C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Daily Stock Analysis\Trades\ADM Intraday 2022-05-09.xlsx is finished
+2022-05-09 16:17:41,187 - root - DEBUG - C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Daily Stock Analysis\Trades\EXPD Intraday 2022-05-09.xlsx is being formatted
+2022-05-09 16:17:42,113 - root - DEBUG - formatting for C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Daily Stock Analysis\Trades\EXPD Intraday 2022-05-09.xlsx is finished
+2022-05-09 16:17:42,433 - root - DEBUG - C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Daily Stock Analysis\Trades\NRG Intraday 2022-05-09.xlsx is being formatted
+2022-05-09 16:17:43,354 - root - DEBUG - formatting for C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Daily Stock Analysis\Trades\NRG Intraday 2022-05-09.xlsx is finished
+2022-05-09 16:17:43,355 - root - DEBUG - Options gathering started
+2022-05-09 16:17:43,358 - root - DEBUG - Options chain for EXPD outdated (gathered 2022-05-09 15:53:44.511579), replacing.
+2022-05-09 16:17:43,363 - root - DEBUG - Options chain for ADM outdated (gathered 2022-05-09 15:53:44.624810), replacing.
+2022-05-09 16:17:43,368 - root - DEBUG - Options chain for NRG outdated (gathered 2022-05-09 15:53:44.686482), replacing.
+2022-05-09 16:17:43,372 - root - DEBUG - ['EXPD', 'ADM', 'NRG']: options chains that are either outdated or need to be overwritten
+2022-05-09 16:17:43,419 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): query2.finance.yahoo.com:443
+2022-05-09 16:17:43,428 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): query2.finance.yahoo.com:443
+2022-05-09 16:17:43,428 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): query2.finance.yahoo.com:443
+2022-05-09 16:17:43,639 - urllib3.connectionpool - DEBUG - https://query2.finance.yahoo.com:443 "GET /v7/finance/options/NRG?getAllData=true&formatted=false&lang=en-US&region=US&corsDomain=finance.yahoo.com HTTP/1.1" 200 None
+2022-05-09 16:17:43,672 - urllib3.connectionpool - DEBUG - https://query2.finance.yahoo.com:443 "GET /v7/finance/options/EXPD?getAllData=true&formatted=false&lang=en-US&region=US&corsDomain=finance.yahoo.com HTTP/1.1" 200 None
+2022-05-09 16:17:43,714 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): fred.stlouisfed.org:443
+2022-05-09 16:17:43,714 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): fred.stlouisfed.org:443
+2022-05-09 16:17:43,764 - urllib3.connectionpool - DEBUG - https://query2.finance.yahoo.com:443 "GET /v7/finance/options/ADM?getAllData=true&formatted=false&lang=en-US&region=US&corsDomain=finance.yahoo.com HTTP/1.1" 200 None
+2022-05-09 16:17:43,857 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): fred.stlouisfed.org:443
+2022-05-09 16:17:44,006 - urllib3.connectionpool - DEBUG - https://fred.stlouisfed.org:443 "GET /series/SOFR HTTP/1.1" 200 20606
+2022-05-09 16:17:44,096 - root - DEBUG - SOFR rate: 0.78%
+2022-05-09 16:17:44,096 - root - DEBUG - OIS Rate: 0.02573959164242634% given overnight rate of 0.78% with 10.95 days to expiration
+2022-05-09 16:17:44,241 - urllib3.connectionpool - DEBUG - https://fred.stlouisfed.org:443 "GET /series/SOFR HTTP/1.1" 200 20606
+2022-05-09 16:17:44,283 - root - DEBUG - SOFR rate: 0.78%
+2022-05-09 16:17:44,283 - root - DEBUG - OIS Rate: 0.02573959164242634% given overnight rate of 0.78% with 10.95 days to expiration
+2022-05-09 16:17:44,320 - urllib3.connectionpool - DEBUG - https://fred.stlouisfed.org:443 "GET /series/SOFR HTTP/1.1" 200 20606
+2022-05-09 16:17:44,376 - root - DEBUG - SOFR rate: 0.78%
+2022-05-09 16:17:44,376 - root - DEBUG - OIS Rate: 0.0027389546100264894% given overnight rate of 0.78% with 3.95 days to expiration
+2022-05-09 16:17:44,639 - ALGO.options_module - DEBUG - Calls for EXPD expiring 2022-05-20 successfully outputted to Excel
+2022-05-09 16:17:44,644 - ALGO.options_module - DEBUG - Puts for EXPD expiring 2022-05-20 successfully outputted to Excel
+2022-05-09 16:17:44,646 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): fred.stlouisfed.org:443
+2022-05-09 16:17:44,681 - ALGO.options_module - DEBUG - Calls for NRG expiring 2022-05-20 successfully outputted to Excel
+2022-05-09 16:17:44,687 - ALGO.options_module - DEBUG - Puts for NRG expiring 2022-05-20 successfully outputted to Excel
+2022-05-09 16:17:44,689 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): fred.stlouisfed.org:443
+2022-05-09 16:17:44,871 - ALGO.options_module - DEBUG - Calls for ADM expiring 2022-05-13 successfully outputted to Excel
+2022-05-09 16:17:44,877 - ALGO.options_module - DEBUG - Puts for ADM expiring 2022-05-13 successfully outputted to Excel
+2022-05-09 16:17:44,879 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): fred.stlouisfed.org:443
+2022-05-09 16:17:44,920 - urllib3.connectionpool - DEBUG - https://fred.stlouisfed.org:443 "GET /series/SOFR HTTP/1.1" 200 20606
+2022-05-09 16:17:44,944 - urllib3.connectionpool - DEBUG - https://fred.stlouisfed.org:443 "GET /series/SOFR HTTP/1.1" 200 20606
+2022-05-09 16:17:44,968 - root - DEBUG - SOFR rate: 0.78%
+2022-05-09 16:17:44,968 - root - DEBUG - OIS Rate: 0.3563971876010763% given overnight rate of 0.78% with 38.95 days to expiration
+2022-05-09 16:17:45,004 - root - DEBUG - SOFR rate: 0.78%
+2022-05-09 16:17:45,004 - root - DEBUG - OIS Rate: 0.3563971876010763% given overnight rate of 0.78% with 38.95 days to expiration
+2022-05-09 16:17:45,151 - ALGO.options_module - DEBUG - Calls for EXPD expiring 2022-06-17 successfully outputted to Excel
+2022-05-09 16:17:45,155 - ALGO.options_module - DEBUG - Puts for EXPD expiring 2022-06-17 successfully outputted to Excel
+2022-05-09 16:17:45,161 - urllib3.connectionpool - DEBUG - https://fred.stlouisfed.org:443 "GET /series/SOFR HTTP/1.1" 200 20606
+2022-05-09 16:17:45,219 - root - DEBUG - SOFR rate: 0.78%
+2022-05-09 16:17:45,219 - root - DEBUG - OIS Rate: 0.02573959164242634% given overnight rate of 0.78% with 10.95 days to expiration
+2022-05-09 16:17:45,260 - root - DEBUG - C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Daily Stock Analysis\Options\EXPD Options Data 2022-05-09.xlsx is being formatted
+2022-05-09 16:17:45,325 - ALGO.options_module - DEBUG - Calls for NRG expiring 2022-06-17 successfully outputted to Excel
+2022-05-09 16:17:45,332 - ALGO.options_module - DEBUG - Puts for NRG expiring 2022-06-17 successfully outputted to Excel
+2022-05-09 16:17:45,453 - root - DEBUG - C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Daily Stock Analysis\Options\NRG Options Data 2022-05-09.xlsx is being formatted
+2022-05-09 16:17:45,952 - ALGO.options_module - DEBUG - Calls for ADM expiring 2022-05-20 successfully outputted to Excel
+2022-05-09 16:17:45,977 - ALGO.options_module - DEBUG - Puts for ADM expiring 2022-05-20 successfully outputted to Excel
+2022-05-09 16:17:45,980 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): fred.stlouisfed.org:443
+2022-05-09 16:17:46,228 - urllib3.connectionpool - DEBUG - https://fred.stlouisfed.org:443 "GET /series/SOFR HTTP/1.1" 200 20606
+2022-05-09 16:17:46,247 - root - DEBUG - formatting for C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Daily Stock Analysis\Options\EXPD Options Data 2022-05-09.xlsx is finished
+2022-05-09 16:17:46,295 - root - DEBUG - SOFR rate: 0.78%
+2022-05-09 16:17:46,295 - root - DEBUG - OIS Rate: 0.0722441842861965% given overnight rate of 0.78% with 17.95 days to expiration
+2022-05-09 16:17:46,855 - ALGO.options_module - DEBUG - Calls for ADM expiring 2022-05-27 successfully outputted to Excel
+2022-05-09 16:17:46,867 - ALGO.options_module - DEBUG - Puts for ADM expiring 2022-05-27 successfully outputted to Excel
+2022-05-09 16:17:46,867 - root - DEBUG - formatting for C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Daily Stock Analysis\Options\NRG Options Data 2022-05-09.xlsx is finished
+2022-05-09 16:17:46,873 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): fred.stlouisfed.org:443
+2022-05-09 16:17:47,120 - urllib3.connectionpool - DEBUG - https://fred.stlouisfed.org:443 "GET /series/SOFR HTTP/1.1" 200 20606
+2022-05-09 16:17:47,209 - root - DEBUG - SOFR rate: 0.78%
+2022-05-09 16:17:47,209 - root - DEBUG - OIS Rate: 0.1426115346851775% given overnight rate of 0.78% with 24.95 days to expiration
+2022-05-09 16:17:47,534 - ALGO.options_module - DEBUG - Calls for ADM expiring 2022-06-03 successfully outputted to Excel
+2022-05-09 16:17:47,539 - ALGO.options_module - DEBUG - Puts for ADM expiring 2022-06-03 successfully outputted to Excel
+2022-05-09 16:17:47,541 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): fred.stlouisfed.org:443
+2022-05-09 16:17:47,787 - urllib3.connectionpool - DEBUG - https://fred.stlouisfed.org:443 "GET /series/SOFR HTTP/1.1" 200 20606
+2022-05-09 16:17:47,832 - root - DEBUG - SOFR rate: 0.78%
+2022-05-09 16:17:47,832 - root - DEBUG - OIS Rate: 0.23720592231561977% given overnight rate of 0.78% with 31.95 days to expiration
+2022-05-09 16:17:47,958 - ALGO.options_module - DEBUG - Calls for ADM expiring 2022-06-10 successfully outputted to Excel
+2022-05-09 16:17:47,962 - ALGO.options_module - DEBUG - Puts for ADM expiring 2022-06-10 successfully outputted to Excel
+2022-05-09 16:17:47,963 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): fred.stlouisfed.org:443
+2022-05-09 16:17:48,211 - urllib3.connectionpool - DEBUG - https://fred.stlouisfed.org:443 "GET /series/SOFR HTTP/1.1" 200 20606
+2022-05-09 16:17:48,295 - root - DEBUG - SOFR rate: 0.78%
+2022-05-09 16:17:48,295 - root - DEBUG - OIS Rate: 0.3563971876010763% given overnight rate of 0.78% with 38.95 days to expiration
+2022-05-09 16:17:48,765 - ALGO.options_module - DEBUG - Calls for ADM expiring 2022-06-17 successfully outputted to Excel
+2022-05-09 16:17:48,773 - ALGO.options_module - DEBUG - Puts for ADM expiring 2022-06-17 successfully outputted to Excel
+2022-05-09 16:17:48,774 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): fred.stlouisfed.org:443
+2022-05-09 16:17:49,024 - urllib3.connectionpool - DEBUG - https://fred.stlouisfed.org:443 "GET /series/SOFR HTTP/1.1" 200 20606
+2022-05-09 16:17:49,076 - root - DEBUG - SOFR rate: 0.78%
+2022-05-09 16:17:49,076 - root - DEBUG - OIS Rate: 0.5005608168035192% given overnight rate of 0.78% with 45.95 days to expiration
+2022-05-09 16:17:49,153 - ALGO.options_module - DEBUG - Calls for ADM expiring 2022-06-24 successfully outputted to Excel
+2022-05-09 16:17:49,157 - ALGO.options_module - DEBUG - Puts for ADM expiring 2022-06-24 successfully outputted to Excel
+2022-05-09 16:17:49,502 - root - DEBUG - C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Daily Stock Analysis\Options\ADM Options Data 2022-05-09.xlsx is being formatted
+2022-05-09 16:17:50,537 - root - DEBUG - formatting for C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Daily Stock Analysis\Options\ADM Options Data 2022-05-09.xlsx is finished
+2022-05-09 16:17:50,540 - root - DEBUG - Options gathering completed
+2022-05-09 16:17:50,541 - root - DEBUG - initial analysis function is entered
+2022-05-09 16:17:50,543 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): query2.finance.yahoo.com:443
+2022-05-09 16:17:51,054 - urllib3.connectionpool - DEBUG - https://query2.finance.yahoo.com:443 "GET /v7/finance/options/ADM?getAllData=true&formatted=false&lang=en-US&region=US&corsDomain=finance.yahoo.com HTTP/1.1" 200 None
+2022-05-09 16:17:51,176 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): query2.finance.yahoo.com:443
+2022-05-09 16:17:51,402 - urllib3.connectionpool - DEBUG - https://query2.finance.yahoo.com:443 "GET /v7/finance/options/EXPD?getAllData=true&formatted=false&lang=en-US&region=US&corsDomain=finance.yahoo.com HTTP/1.1" 200 None
+2022-05-09 16:17:51,442 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): query2.finance.yahoo.com:443
+2022-05-09 16:17:51,648 - urllib3.connectionpool - DEBUG - https://query2.finance.yahoo.com:443 "GET /v7/finance/options/NRG?getAllData=true&formatted=false&lang=en-US&region=US&corsDomain=finance.yahoo.com HTTP/1.1" 200 None
+2022-05-09 16:17:51,703 - root - WARNING - Warning, one hour to market close, reducing maximum position size to 25%
+
+2022-05-09 16:17:52,082 - root - DEBUG - Table trades_ADM created in trades.db
+2022-05-09 16:17:52,082 - root - DEBUG - Table trades_EXPD created in trades.db
+2022-05-09 16:17:52,082 - root - DEBUG - Table trades_NRG created in trades.db
+2022-05-09 16:17:52,090 - root - DEBUG - table quotes_ADM added in quotes.db
+2022-05-09 16:17:52,090 - root - DEBUG - table quotes_EXPD added in quotes.db
+2022-05-09 16:17:52,091 - root - DEBUG - table quotes_NRG added in quotes.db
+2022-05-09 16:17:52,093 - root - DEBUG - DATABASE INTEGRITY CHECK FOR C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Databases\accounts.db: ok
+2022-05-09 16:17:52,094 - root - DEBUG - DATABASE INTEGRITY CHECK FOR C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Databases\indicators.db: ok
+2022-05-09 16:17:52,095 - root - DEBUG - DATABASE INTEGRITY CHECK FOR C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Databases\options.db: ok
+2022-05-09 16:17:52,096 - root - DEBUG - DATABASE INTEGRITY CHECK FOR C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Databases\positions.db: ok
+2022-05-09 16:17:52,096 - root - DEBUG - DATABASE INTEGRITY CHECK FOR C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Databases\quotes.db: ok
+2022-05-09 16:17:52,097 - root - DEBUG - DATABASE INTEGRITY CHECK FOR C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Databases\trades.db: ok
+2022-05-09 16:17:55,113 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): query2.finance.yahoo.com:443
+2022-05-09 16:17:55,113 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): query2.finance.yahoo.com:443
+2022-05-09 16:17:55,114 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): query2.finance.yahoo.com:443
+2022-05-09 16:17:55,268 - urllib3.connectionpool - DEBUG - https://query2.finance.yahoo.com:443 "GET /v8/finance/chart/ADM?range=1d&interval=1m&includePrePost=True&events=div%2Csplits HTTP/1.1" 200 None
+2022-05-09 16:17:55,313 - urllib3.connectionpool - DEBUG - https://query2.finance.yahoo.com:443 "GET /v8/finance/chart/EXPD?range=1d&interval=1m&includePrePost=True&events=div%2Csplits HTTP/1.1" 200 None
+2022-05-09 16:17:55,326 - urllib3.connectionpool - DEBUG - https://query2.finance.yahoo.com:443 "GET /v8/finance/chart/NRG?range=1d&interval=1m&includePrePost=True&events=div%2Csplits HTTP/1.1" 200 None
+2022-05-09 16:17:55,656 - root - DEBUG - C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Daily Stock Analysis\Trades\ADM Intraday 2022-05-09.xlsx is being formatted
+2022-05-09 16:17:56,536 - root - DEBUG - formatting for C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Daily Stock Analysis\Trades\ADM Intraday 2022-05-09.xlsx is finished
+2022-05-09 16:17:56,792 - root - DEBUG - C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Daily Stock Analysis\Trades\EXPD Intraday 2022-05-09.xlsx is being formatted
+2022-05-09 16:17:57,685 - root - DEBUG - formatting for C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Daily Stock Analysis\Trades\EXPD Intraday 2022-05-09.xlsx is finished
+2022-05-09 16:17:57,975 - root - DEBUG - C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Daily Stock Analysis\Trades\NRG Intraday 2022-05-09.xlsx is being formatted
+2022-05-09 16:17:58,908 - root - DEBUG - formatting for C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Daily Stock Analysis\Trades\NRG Intraday 2022-05-09.xlsx is finished
+2022-05-09 16:17:58,909 - root - DEBUG - Trade data saved to DB
+2022-05-09 16:17:58,937 - root - DEBUG - Quote data saved to DB
+2022-05-09 16:17:58,963 - root - DEBUG - Indicator data saved to DB
+2022-05-09 16:17:58,964 - root - DEBUG - entering experimental trade analysis function (as of 2/14/2022)
+2022-05-09 16:17:58,966 - root - DEBUG - Entering options analysis function (untested as of 2/14/2022)
+2022-05-09 16:17:58,968 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): query2.finance.yahoo.com:443
+2022-05-09 16:17:59,597 - urllib3.connectionpool - DEBUG - https://query2.finance.yahoo.com:443 "GET /v7/finance/options/ADM?getAllData=true&formatted=false&lang=en-US&region=US&corsDomain=finance.yahoo.com HTTP/1.1" 200 None
+2022-05-09 16:17:59,683 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): query2.finance.yahoo.com:443
+2022-05-09 16:17:59,907 - urllib3.connectionpool - DEBUG - https://query2.finance.yahoo.com:443 "GET /v7/finance/options/EXPD?getAllData=true&formatted=false&lang=en-US&region=US&corsDomain=finance.yahoo.com HTTP/1.1" 200 None
+2022-05-09 16:17:59,939 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): query2.finance.yahoo.com:443
+2022-05-09 16:18:00,127 - urllib3.connectionpool - DEBUG - https://query2.finance.yahoo.com:443 "GET /v7/finance/options/NRG?getAllData=true&formatted=false&lang=en-US&region=US&corsDomain=finance.yahoo.com HTTP/1.1" 200 None
+2022-05-09 16:18:00,170 - root - DEBUG - Exiting experimental options update function
+2022-05-09 16:18:00,172 - root - DEBUG - trades_ADM cleaned in trades.db due to 30 minutes having elapsed
+2022-05-09 16:18:00,172 - root - DEBUG - trades_EXPD cleaned in trades.db due to 30 minutes having elapsed
+2022-05-09 16:18:00,173 - root - DEBUG - trades_NRG cleaned in trades.db due to 30 minutes having elapsed
+2022-05-09 16:18:00,180 - root - DEBUG - table quotes_ADM cleaned in quotes.db due to 1 hour having elapsed
+2022-05-09 16:18:00,180 - root - DEBUG - table quotes_EXPD cleaned in quotes.db due to 1 hour having elapsed
+2022-05-09 16:18:00,180 - root - DEBUG - table quotes_NRG cleaned in quotes.db due to 1 hour having elapsed
