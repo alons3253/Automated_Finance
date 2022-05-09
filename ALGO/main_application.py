@@ -58,10 +58,12 @@ def suffix(d):
     return 'th' if 11 <= d <= 13 else {1: 'st', 2: 'nd', 3: 'rd'}.get(d % 10, 'th')
 
 
+# formats dat strings
 def custom_strftime(time_format, t):
     return t.strftime(time_format).replace('{S}', str(t.day) + suffix(t.day))
 
 
+# need this to scrape together all the times and normalize them to CST, ideally want to localize this regardless of tz
 def time_initialization():
     fulltimezone = str(dt.datetime.now(dt.timezone.utc).astimezone().tzinfo)
     local_timezone = ''.join([c for c in fulltimezone if c.isupper()])
@@ -100,7 +102,8 @@ def check_for_market_close():
         raise Exception('The market is closing in 5 minutes, all positions have been closed')
 
 
-# working
+# working, basically creates an open stream and retrieves data every 30 seconds instead of my prior method which
+# closed the stream, collected the data, and then reopened it
 def websocket_boot():
     try:
         socket_th = th.Thread(target=websocket_bootstrap.start_ws)
@@ -111,14 +114,14 @@ def websocket_boot():
         websocket_bootstrap.close_ws()
 
 
-# working
+# working, retrives data at specified intervals defined in main
 def data_thread_marshaller():
     with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
         executor.submit(stock_data_bootstrap.quote_data_processor).result()
         executor.submit(finnhub_tech_bootstrap.tech_indicator).result()
 
 
-# working
+# working, get data one time that does not need to be retrieved again
 def initial_fetch():
     # check and see if we dont already have the information
     # make a list with 4 of the initial fetches in there (I plan to add more)
@@ -148,6 +151,7 @@ def initial_fetch():
             except FileNotFoundError:
                 os.remove(file)
 
+    # treasury bond yields are unused
     bond_files = glob.glob(cwd + r"\Daily Stock Analysis\Bonds\US T-Bond Yields (*).xlsx")
     if len(bond_files) > 0:
         for file in bond_files:
@@ -170,6 +174,7 @@ def initial_fetch():
                 cursor.execute(f"select * from initial_quote_{stock}")
                 initial_data = cursor.fetchall()[0]
                 if len(initial_data) > 0:
+                    # formatting data for input into sql table
                     quote = {'time': initial_data[0], 'beta': initial_data[1], 'dividend': initial_data[2],
                              "day's range": initial_data[3], '52 week range': initial_data[4],
                              'one year target': initial_data[5], 'previous close': initial_data[6],
@@ -180,7 +185,7 @@ def initial_fetch():
             fetched_information.append(f'Initial Quote')
 
     logging.debug(f"information already fetched: {fetched_information}")
-    # initial fetches
+    # initial fetches, the fetched information list shows us what we already have so we dont retrieve it again
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
         if 'Initial Quote' not in fetched_information:
             initial_quote_fetch = executor.submit(stock_data_bootstrap.initial_quote_data_fetch).result()
@@ -219,7 +224,7 @@ def initial_fetch():
         logging.error(f"Exception occurred {error}", exc_info=True)
 
 
-# WIP and experimental as of 2/14/2022
+# WIP as of 5/9/2022
 def initial_analysis():
     print("LIBOR Yields:", libor_yields)
     print("Initial Quote Fetch:", initial_quote_fetch)
@@ -367,7 +372,7 @@ def initial_analysis():
     return strike_pins
 
 
-# okay
+# works fine, redone on 5/9/2022 to make it a bit more efficient
 def cleanup():
     # needs to remove the far dated elements in the sql databases
     db_bootstrap.cleanup_of_trade_database('trades.db')
@@ -375,7 +380,7 @@ def cleanup():
     db_bootstrap.cleanup_of_indicators_database('indicators.db')
 
 
-# reenabled on 3/17/2022
+# not all of these modules included in here have been tested
 def data_analysis():
     analysis_module = stockAnalysis(stock_tickers, stock_quote_data, ti_data, indicator_votes, current_directory)
     b_l, s_l = analysis_module.indicator_analysis(stock_shortlist, stock_buylist, 'indicators.db')
@@ -435,6 +440,7 @@ if __name__ == '__main__':
     finally:
         conn.close()
 
+        # have this here just to make sure nothing gets corrupted since the excel files seem to get destroyed sometimes
         logging.critical("Performing maintenance checks on databases")
         file_handler_module = filePruning(current_directory)
         file_handler_module.initialize_directories()
@@ -442,7 +448,7 @@ if __name__ == '__main__':
         file_handler_module.excel_handler()
 
         verifyFileIntegrity(current_directory).check_files()
-
+        # initialize all the databases
         db_initializer = databaseInitializer(cwd=current_directory)
 
         troublesome_dbs = db_initializer.verify_db_integrity()
@@ -451,15 +457,17 @@ if __name__ == '__main__':
                             f"they have been removed.")
         else:
             logging.critical("No database issues were detected")
-
+        # obviously need an internet connection
         if no_internet_boolean:
             sys.exit(0)
 
+    # initialize all of these keys that we need to connect to our account
     api, alpaca_data_keys, finnhub_token, brokerage_keys = db_initializer.check_for_account_details()
 
     account = api.get_account()
     clock = api.get_clock()
 
+    # the account balance is doubled with margin, I don't really want to rely off margin so hence we divide by 2
     account_balance = float(account.buying_power) / 2
     print('Trading account status:', account.status)
     print('Current account balance (without margin) is: $' + str(round(account_balance, 2)))
@@ -467,7 +475,7 @@ if __name__ == '__main__':
     market_close, market_closed_bool = time_initialization()
     manual_override_bool, choice = inputWithTimeout().override()
 
-    # if market_closed_bool is False and manual_override_bool is True:
+    # this is just for the manual option if the choice was specified
     if manual_override_bool is True:
         print("Select from one of the following choices:")
         print("Press 1 for Automated Stock Fetch and Trading")
@@ -529,7 +537,9 @@ if __name__ == '__main__':
     # Start of main program
     # if not choice == 3 and not market_closed_bool:
     if not choice == 3:
-        # initialization of variables
+        # initialization of variables, I want to reduce this as much as possible because this is all memory that is
+        # constantly being addressed and gets large, I have somewhat rectified it with wiping some of the variables
+        # after they deposit their data into their respective SQL databases
         while True:
             trade_data = {}
             stock_quote_data = {}
@@ -550,7 +560,10 @@ if __name__ == '__main__':
                 zerotick = False
                 tick_test[stock] = [uptick, downtick, zerotick]
 
+            # custom error messages
             errormessage_market_close = 'The market is currently closed'
+            # i definitely do not want the user to be holding positions after hours but i am not sure if i have totally
+            # eliminated this possibility
             errormessage_5min_to_close = 'The market is closing in 5 minutes, be warned that any new positions ' \
                                          'may be held until the next trading day'
             errormessage_trade_fetch = 'No trades gathered'
@@ -569,12 +582,13 @@ if __name__ == '__main__':
             # end boot-strappers
             #######################################################################################################
             print("Starting Initial Fetch, this may take several minutes")
-            # initial fetch and db creation
+            # initial fetch
             options_bootstrapper, initial_quote_fetch, stock_quote_data, libor_yields, ti_data = initial_fetch()
             websocket_boot()
-            # important function
+            # important function, gathers all data that we only need to get once
             strike_pins = initial_analysis()
 
+            # i have this in a while loop to make sure that all dbs are generated and work properly before we use them
             while True:
                 db_bootstrap.generation_of_trade_database('trades.db')
                 db_bootstrap.generation_of_quote_database('quotes.db')
@@ -591,8 +605,16 @@ if __name__ == '__main__':
             # end initialization and start main loop
             while True:
                 """
-                works well as of 12/17/2021
-                everything works okay, there are still issues with the options chain storage and pulling from dbs
+                Progress as of 5/9/2022:
+                I have reenabled all of the auxilliary modules regarding the data analysis and trade execution, those
+                are untested so far
+                
+                The options chain analyzer performs well, but there are a few things left to do, firstly i need to
+                insert the new options chains gathered that we compare with the old options chain in storage. secondly
+                i need to figure out what to do with the change in options volume dictionary in terms of making a trade
+                decision
+                
+                overall everything else seems to work okay
                 I have not been able to test the trade executor module and think that is a priority (in order to make
                 sure we can trade and perform all the functions we were able to just a few months ago)
                 all of the technical analysis has been offloaded from finnhub and is a bit more rigorous since all the
@@ -606,7 +628,6 @@ if __name__ == '__main__':
                 
                 ideally i will want to get rid of the 10 second time.sleep at the end of this loop
                 
-                the options pricing analysis will be added in the end once i figure out what to do with it
                 /
                 """
                 data_thread_marshaller()
@@ -620,7 +641,7 @@ if __name__ == '__main__':
                 stock_quote_data = db_bootstrap.insertion_into_quote_database(stock_quote_data, 'quotes.db')
                 ti_data = db_bootstrap.insertion_into_indicators_database(ti_data, 'indicators.db')
 
-                # commented out for now as we focus on the initial function
+                # data analysis is untested
                 data_analysis()
                 cleanup()
                 # check_for_market_close()
