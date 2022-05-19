@@ -381,23 +381,29 @@ def cleanup():
 
 
 # not all of these modules included in here have been tested
-def data_analysis():
+def data_analysis(tick_test_dupe):
     analysis_module = stockAnalysis(stock_tickers, stock_quote_data, ti_data, indicator_votes, current_directory)
     b_l, s_l = analysis_module.indicator_analysis(stock_shortlist, stock_buylist, 'indicators.db')
-    volume_dict = analysis_module.trade_analysis(tick_test, 'trades.db')
+    tick_test, volume_dict = analysis_module.trade_analysis(tick_test_dupe, 'trades.db')
     option_analysis = analysis_module.option_analysis()
-    print('change in options volume:')
-    print(option_analysis)
+    # print('change in options volume:')
+    # print(option_analysis)
 
     for stock in stock_tickers:
-        if volume_dict[stock]['30_seconds']['shares_bought'] == volume_dict[stock]['1_minute']['shares_bought'] or \
-                volume_dict[stock]['1_minute']['shares_bought'] == volume_dict[stock]['2_minutes']['shares_bought']:
+        if volume_dict[stock]['30_s']['buys'] == volume_dict[stock]['1_m']['buys'] or \
+                volume_dict[stock]['1_m']['buys'] == volume_dict[stock]['2_m']['buys']:
             continue
         else:
+            print('purchasing analysis function entered')
             s_b, b, w_b, s_s, s, w_s = purchasingAnalysis([stock], volume_dict, b_l, s_l,
-                                                          current_directory).analysis_operations(stock_quote_data)
+                                                          current_directory).analysis_operations()
             trade_bootstrap.trade_execution(account_balance, s_b, b, w_b, s_s, s, w_s)
+        # clear out these dictionaries to save memory (especially because the trade data variable is massive)
         stock_quote_data[stock] = []
+        trade_data[stock] = []
+        ti_data[stock] = []
+
+    return tick_test
 
 
 if __name__ == '__main__':
@@ -572,7 +578,8 @@ if __name__ == '__main__':
 
             # boot-strappers, these serve the purpose of initializing classes so the multi-threading works fine
             stock_data_bootstrap = stockDataEngine(stock_tickers, stock_quote_data, current_directory)
-            websocket_bootstrap = WebsocketBootStrapper(stock_tickers, trade_data, finnhub_token)
+            websocket_bootstrap = WebsocketBootStrapper(stock_tickers, trade_data, finnhub_token,
+                                                        alpaca_data_keys[0], alpaca_data_keys[1])
             finnhub_tech_bootstrap = technicalIndicators(stock_tickers, ti_data, current_directory)
 
             bond_bootstrap = bondYields(dt.date.today(), current_directory)
@@ -634,15 +641,13 @@ if __name__ == '__main__':
                 # we have the trade data information loaded into the sql database and i want to also do this
                 # for the quote and technical indicator data because its better and more memory efficient
                 trade_data = websocket_bootstrap.return_data()
-                print(trade_data)
-                print(stock_quote_data)
-                print(ti_data)
+
                 trade_data = db_bootstrap.insertion_into_database(trade_data, 'trades.db')
                 stock_quote_data = db_bootstrap.insertion_into_quote_database(stock_quote_data, 'quotes.db')
                 ti_data = db_bootstrap.insertion_into_indicators_database(ti_data, 'indicators.db')
 
                 # data analysis is untested
-                data_analysis()
+                tick_test = data_analysis(tick_test)
                 cleanup()
                 # check_for_market_close()
                 time.sleep(5)

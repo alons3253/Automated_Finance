@@ -74,27 +74,19 @@ class stockAnalysis:
                                 dictionary_of_options_volume['puts'].append(
                                     [strike, change_in_volume, change_in_price])
 
-                        print(dictionary_of_options_volume)
+                        #print(dictionary_of_options_volume)
                         change_in_options_volume[stock].append(dictionary_of_options_volume)
 
         # begin analysis of the change in options volume
         logging.debug("Exiting experimental options update function")
         return change_in_options_volume
 
-    # okay for now
+    # fixed
     def trade_analysis(self, tick_test, path):
         logging.debug("entering experimental trade analysis function (as of 2/14/2022)")
 
-        volume_terms_dict = {}
         with sqlite3.connect(self.path + path, detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES) as db:
             for stock in self.stock_tickers:
-                volume_terms_dict[stock] = {"30_seconds": {'shares_bought': 0, 'shares_sold': 0},
-                                            "1_minute": {'shares_bought': 0, 'shares_sold': 0},
-                                            "2_minutes": {'shares_bought': 0, 'shares_sold': 0},
-                                            "4_minutes": {'shares_bought': 0, 'shares_sold': 0},
-                                            "8_minutes": {'shares_bought': 0, 'shares_sold': 0},
-                                            "15_minutes": {'shares_bought': 0, 'shares_sold': 0}}
-
                 uptick = tick_test[stock][0]
                 downtick = tick_test[stock][1]
                 zerotick = tick_test[stock][2]
@@ -126,16 +118,19 @@ class stockAnalysis:
                                 if first_trade[-1] == 'None':
                                     if second_trade[2] > first_trade[2]:
                                         downtick = True
-                                        cursor.execute(f"update trades_{stock} set direction = 'Sell' where rowid = (?)", (first_trade[0],))
+                                        cursor.execute(f"update trades_{stock} set direction = 'Sell' where rowid = (?)",
+                                                       (first_trade[0],))
                                         db.commit()
                                     elif second_trade[2] < first_trade[2]:
                                         uptick = True
-                                        cursor.execute(f"update trades_{stock} set direction = 'Buy' where rowid = (?)", (first_trade[0],))
+                                        cursor.execute(f"update trades_{stock} set direction = 'Buy' where rowid = (?)",
+                                                       (first_trade[0],))
                                         db.commit()
                                     elif second_trade[2] == first_trade[2]:
                                         downtick = True
                                         zerotick = True
-                                        cursor.execute(f"update trades_{stock} set direction = 'Sell' where rowid = (?)", (first_trade[0],))
+                                        cursor.execute(f"update trades_{stock} set direction = 'Sell' where rowid = (?)",
+                                                       (first_trade[0],))
                                         db.commit()
 
                             elif index < len(trade_elements):
@@ -168,46 +163,35 @@ class stockAnalysis:
                             pass
                 except IndexError:
                     pass
-
                 tick_test[stock] = [uptick, downtick, zerotick]
-                cur = db.execute(f"select * from trades_{stock}")
-                trade_data = cur.fetchall()
-                for row in trade_data:
-                    # since we have already classified all of the trades as buys or sells, here we will analyze them
-                    tradetime = row[0]
-                    if tradetime > dt.datetime.now() - dt.timedelta(seconds=30):
-                        if row[-1] == 'Buy':
-                            volume_terms_dict[stock]['30_seconds']['shares_bought'] += int(row[2])
-                        elif row[-1] == 'Sell':
-                            volume_terms_dict[stock]['30_seconds']['shares_sold'] += int(row[2])
-                    if tradetime > dt.datetime.now() - dt.timedelta(seconds=60):
-                        if row[-1] == 'Buy':
-                            volume_terms_dict[stock]['1_minute']['shares_bought'] += int(row[2])
-                        elif row[-1] == 'Sell':
-                            volume_terms_dict[stock]['1_minute']['shares_sold'] += int(row[2])
-                    if tradetime > dt.datetime.now() - dt.timedelta(seconds=120):
-                        if row[-1] == 'Buy':
-                            volume_terms_dict[stock]['2_minutes']['shares_bought'] += int(row[2])
-                        elif row[-1] == 'Sell':
-                            volume_terms_dict[stock]['2_minutes']['shares_sold'] += int(row[2])
-                    if tradetime > dt.datetime.now() - dt.timedelta(seconds=240):
-                        if row[-1] == 'Buy':
-                            volume_terms_dict[stock]['4_minutes']['shares_bought'] += int(row[2])
-                        elif row[-1] == 'Sell':
-                            volume_terms_dict[stock]['4_minutes']['shares_sold'] += int(row[2])
-                    if tradetime > dt.datetime.now() - dt.timedelta(seconds=480):
-                        if row[-1] == 'Buy':
-                            volume_terms_dict[stock]['8_minutes']['shares_bought'] += int(row[2])
-                        elif row[-1] == 'Sell':
-                            volume_terms_dict[stock]['8_minutes']['shares_sold'] += int(row[2])
-                    if tradetime > dt.datetime.now() - dt.timedelta(seconds=900):
-                        if row[-1] == 'Buy':
-                            volume_terms_dict[stock]['15_minutes']['shares_bought'] += int(row[2])
-                        elif row[-1] == 'Sell':
-                            volume_terms_dict[stock]['15_minutes']['shares_sold'] += int(row[2])
-            ##############################################################################
-        print('volume by stock ordered 30sec, 1min, 2min, 4min, 8min and 15min:', volume_terms_dict)
-        return volume_terms_dict
+        ##############################################################################
+        volume_terms_dict = {}
+        for stock in self.stock_tickers:
+            volume_terms_dict[stock] = {}
+
+        time_intervals = [0.5, 1, 2, 4, 8, 15]
+        with sqlite3.connect(self.path + path, detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES) as db:
+            for stock in self.stock_tickers:
+                time = dt.datetime.now()
+
+                for time_interval in time_intervals:
+                    buys = 0
+                    sells = 0
+                    trade_data = db.execute(f"select * from trades_{stock} where time > (?)",
+                                            ((time - dt.timedelta(minutes=time_interval)),)).fetchall()
+                    for row in trade_data:
+                        buys += row[2] if row[-1] == 'Buy' else 0
+                        sells += row[2] if row[-1] == 'Sell' else 0
+
+                    b_s = {'buys': buys, 'sells': sells}
+
+                    if time_interval == 0.5:
+                        volume_terms_dict[stock]['30_s'] = b_s
+                        continue
+                    volume_terms_dict[stock][f'{time_interval}_m'] = b_s
+
+        print('volume by stock (30sec, 1min, 2min, 4min, 8min and 15min):', volume_terms_dict)
+        return tick_test, volume_terms_dict
 
     # ok for now
     def indicator_analysis(self, stock_shortlist, stock_buylist, path):

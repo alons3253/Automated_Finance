@@ -136,15 +136,8 @@ class technicalIndicators:
             # Rate of Change (momentum)
             dataframe = ROC(dataframe)
 
-            # 3/12/2022 i dont think these lines are necessary
-            # probably get 4:00 am as the time
-            #four_am = dt.datetime.combine(dt.date.today(), dt.time(4, 0))
-            #adx = np.argmax(abs(dataframe['ADX'].index - four_am))
-            #print(adx)
-
             # there's no way we select nan values doing it this way
             dataframe = dataframe.round(decimals=2)
-            dataframe = dataframe.dropna()
             last_valid_row = dataframe.loc[dataframe.index[-1]]
 
             b = 0

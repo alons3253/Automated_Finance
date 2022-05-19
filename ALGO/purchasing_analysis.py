@@ -15,7 +15,8 @@ class purchasingAnalysis:
         self.buy_list = buy_list
         self.short_list = short_list
 
-    def analysis_operations(self, quote_data):
+    def analysis_operations(self):
+        quote_data = {}
         weak_buy = []
         buy = []
         strong_buy = []
@@ -29,12 +30,18 @@ class purchasingAnalysis:
                 quote_data[stock] = cur.fetchall()
 
         for stock in self.stock_tickers:
+            print(stock)
+            print(self.volume_dict[stock])
             try:
-                order_flow = round(self.volume_dict[stock]['30_seconds']['shares_bought'] /
-                                   (self.volume_dict[stock]['30_seconds']['shares_bought'] +
-                                    self.volume_dict[stock]['30_seconds']['shares_sold']), 2)
+                order_flow = round(self.volume_dict[stock]['30_s']['buys'] /
+                                   (self.volume_dict[stock]['30_s']['buys'] +
+                                    self.volume_dict[stock]['30_s']['sells']), 2)
             except ZeroDivisionError:
                 continue
+
+            print(order_flow)
+            print(self.short_list[stock])
+            print(self.buy_list[stock])
 
             try:
                 short_indicator = self.short_list[stock][-1]
@@ -50,6 +57,7 @@ class purchasingAnalysis:
                     strong_sell.append(f'SELL LONG POSITION AND SHORT SELL {stock}')
             except IndexError:
                 pass
+
             try:
                 long_indicator = self.buy_list[stock][-1]
                 # add a clause that if we get the same bullish and very bullish indicators, we make the trade regardless

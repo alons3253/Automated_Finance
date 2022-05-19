@@ -1,0 +1,247 @@
+2022-05-16 19:40:13,681 - root - CRITICAL - Performing maintenance checks on databases
+2022-05-16 19:40:13,985 - ALGO.db_initializer - DEBUG - Initialization of Databases
+2022-05-16 19:40:13,987 - root - DEBUG - DATABASE INTEGRITY CHECK FOR C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Databases\accounts.db: ok
+2022-05-16 19:40:13,988 - root - DEBUG - DATABASE INTEGRITY CHECK FOR C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Databases\indicators.db: ok
+2022-05-16 19:40:13,988 - root - DEBUG - DATABASE INTEGRITY CHECK FOR C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Databases\options.db: ok
+2022-05-16 19:40:13,989 - root - DEBUG - DATABASE INTEGRITY CHECK FOR C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Databases\positions.db: ok
+2022-05-16 19:40:13,991 - root - DEBUG - DATABASE INTEGRITY CHECK FOR C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Databases\quotes.db: ok
+2022-05-16 19:40:13,992 - root - DEBUG - DATABASE INTEGRITY CHECK FOR C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Databases\trades.db: ok
+2022-05-16 19:40:13,992 - root - CRITICAL - No database issues were detected
+2022-05-16 19:40:13,994 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): paper-api.alpaca.markets:443
+2022-05-16 19:40:14,222 - urllib3.connectionpool - DEBUG - https://paper-api.alpaca.markets:443 "GET /v2/account HTTP/1.1" 200 764
+2022-05-16 19:40:14,225 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): paper-api.alpaca.markets:443
+2022-05-16 19:40:14,373 - urllib3.connectionpool - DEBUG - https://paper-api.alpaca.markets:443 "GET /v2/account HTTP/1.1" 200 764
+2022-05-16 19:40:14,373 - root - DEBUG - A valid Alpaca trading account was found
+2022-05-16 19:40:14,420 - urllib3.connectionpool - DEBUG - https://paper-api.alpaca.markets:443 "GET /v2/account HTTP/1.1" 200 764
+2022-05-16 19:40:14,465 - urllib3.connectionpool - DEBUG - https://paper-api.alpaca.markets:443 "GET /v2/clock HTTP/1.1" 200 148
+2022-05-16 19:40:16,707 - root - INFO - OBV data exists for today
+2022-05-16 19:40:16,743 - ALGO.bond_yield_fetch_module - DEBUG - Initialization of bond gathering
+2022-05-16 19:40:16,743 - ALGO.db_initializer - DEBUG - Initialization of Databases
+2022-05-16 19:40:16,762 - root - DEBUG - information already fetched: []
+2022-05-16 19:40:24,703 - root - DEBUG - C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Daily Stock Analysis\Bonds\US T-Bond Yields (05-16-2022).xlsx is being formatted
+2022-05-16 19:40:26,219 - root - DEBUG - formatting for C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Daily Stock Analysis\Bonds\US T-Bond Yields (05-16-2022).xlsx is finished
+2022-05-16 19:40:26,219 - root - DEBUG - Treasury bond excel sheet saved successfully
+2022-05-16 19:40:26,219 - root - DEBUG - (0.62, 1.07, 1.5, 1.96)
+2022-05-16 19:40:27,660 - root - DEBUG - C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Daily Stock Analysis\Bonds\LIBOR Yields (05-13-2022).xlsx is being formatted
+2022-05-16 19:40:28,708 - root - DEBUG - formatting for C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Daily Stock Analysis\Bonds\LIBOR Yields (05-13-2022).xlsx is finished
+2022-05-16 19:40:28,709 - root - DEBUG - London Interbank Offering Rates (LIBOR): (0.82571, 0.88671, 1.44371, 1.995, 2.65214)
+2022-05-16 19:40:28,773 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): query2.finance.yahoo.com:443
+2022-05-16 19:40:28,775 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): query2.finance.yahoo.com:443
+2022-05-16 19:40:28,775 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): query2.finance.yahoo.com:443
+2022-05-16 19:40:28,948 - urllib3.connectionpool - DEBUG - https://query2.finance.yahoo.com:443 "GET /v8/finance/chart/DUK?range=1d&interval=1m&includePrePost=True&events=div%2Csplits HTTP/1.1" 200 None
+2022-05-16 19:40:28,957 - urllib3.connectionpool - DEBUG - https://query2.finance.yahoo.com:443 "GET /v8/finance/chart/SPGI?range=1d&interval=1m&includePrePost=True&events=div%2Csplits HTTP/1.1" 200 None
+2022-05-16 19:40:28,970 - urllib3.connectionpool - DEBUG - https://query2.finance.yahoo.com:443 "GET /v8/finance/chart/MS?range=1d&interval=1m&includePrePost=True&events=div%2Csplits HTTP/1.1" 200 None
+2022-05-16 19:40:29,363 - root - DEBUG - C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Daily Stock Analysis\Trades\DUK Intraday 2022-05-16.xlsx is being formatted
+2022-05-16 19:40:30,225 - root - DEBUG - formatting for C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Daily Stock Analysis\Trades\DUK Intraday 2022-05-16.xlsx is finished
+2022-05-16 19:40:30,545 - root - DEBUG - C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Daily Stock Analysis\Trades\SPGI Intraday 2022-05-16.xlsx is being formatted
+2022-05-16 19:40:31,367 - root - DEBUG - formatting for C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Daily Stock Analysis\Trades\SPGI Intraday 2022-05-16.xlsx is finished
+2022-05-16 19:40:31,728 - root - DEBUG - C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Daily Stock Analysis\Trades\MS Intraday 2022-05-16.xlsx is being formatted
+2022-05-16 19:40:32,580 - root - DEBUG - formatting for C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Daily Stock Analysis\Trades\MS Intraday 2022-05-16.xlsx is finished
+2022-05-16 19:40:32,585 - root - DEBUG - table initial_quote_DUK created in indicators.db
+2022-05-16 19:40:32,593 - root - DEBUG - table initial_quote_SPGI created in indicators.db
+2022-05-16 19:40:32,603 - root - DEBUG - table initial_quote_MS created in indicators.db
+2022-05-16 19:40:32,608 - root - DEBUG - Initial quote data saved to DB
+2022-05-16 19:40:32,608 - root - DEBUG - Options gathering started
+2022-05-16 19:40:32,609 - root - DEBUG - ['DUK', 'SPGI', 'MS']: options chains that are either outdated or need to be overwritten
+2022-05-16 19:40:32,648 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): query2.finance.yahoo.com:443
+2022-05-16 19:40:32,652 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): query2.finance.yahoo.com:443
+2022-05-16 19:40:32,654 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): query2.finance.yahoo.com:443
+2022-05-16 19:40:32,948 - urllib3.connectionpool - DEBUG - https://query2.finance.yahoo.com:443 "GET /v7/finance/options/DUK?getAllData=true&formatted=false&lang=en-US&region=US&corsDomain=finance.yahoo.com HTTP/1.1" 200 None
+2022-05-16 19:40:33,000 - urllib3.connectionpool - DEBUG - https://query2.finance.yahoo.com:443 "GET /v7/finance/options/SPGI?getAllData=true&formatted=false&lang=en-US&region=US&corsDomain=finance.yahoo.com HTTP/1.1" 200 None
+2022-05-16 19:40:33,011 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): fred.stlouisfed.org:443
+2022-05-16 19:40:33,119 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): fred.stlouisfed.org:443
+2022-05-16 19:40:33,154 - urllib3.connectionpool - DEBUG - https://query2.finance.yahoo.com:443 "GET /v7/finance/options/MS?getAllData=true&formatted=false&lang=en-US&region=US&corsDomain=finance.yahoo.com HTTP/1.1" 200 None
+2022-05-16 19:40:33,305 - urllib3.connectionpool - DEBUG - https://fred.stlouisfed.org:443 "GET /series/SOFR HTTP/1.1" 200 20630
+2022-05-16 19:40:33,378 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): fred.stlouisfed.org:443
+2022-05-16 19:40:33,383 - urllib3.connectionpool - DEBUG - https://fred.stlouisfed.org:443 "GET /series/SOFR HTTP/1.1" 200 20630
+2022-05-16 19:40:33,399 - root - DEBUG - SOFR rate: 0.79%
+2022-05-16 19:40:33,399 - root - DEBUG - OIS Rate: 0.0025812219742959996% given overnight rate of 0.79% with 3.81 days to expiration
+2022-05-16 19:40:33,439 - root - DEBUG - SOFR rate: 0.79%
+2022-05-16 19:40:33,439 - root - DEBUG - OIS Rate: 0.0025812219742959996% given overnight rate of 0.79% with 3.81 days to expiration
+2022-05-16 19:40:33,590 - urllib3.connectionpool - DEBUG - https://fred.stlouisfed.org:443 "GET /series/SOFR HTTP/1.1" 200 20630
+2022-05-16 19:40:33,662 - root - DEBUG - SOFR rate: 0.79%
+2022-05-16 19:40:33,662 - root - DEBUG - OIS Rate: 0.0025812219742959996% given overnight rate of 0.79% with 3.81 days to expiration
+2022-05-16 19:40:33,826 - ALGO.options_module - DEBUG - Calls for DUK expiring 2022-05-20 successfully outputted to Excel
+2022-05-16 19:40:33,831 - ALGO.options_module - DEBUG - Puts for DUK expiring 2022-05-20 successfully outputted to Excel
+2022-05-16 19:40:33,833 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): fred.stlouisfed.org:443
+2022-05-16 19:40:33,880 - ALGO.options_module - DEBUG - Calls for SPGI expiring 2022-05-20 successfully outputted to Excel
+2022-05-16 19:40:33,890 - ALGO.options_module - DEBUG - Puts for SPGI expiring 2022-05-20 successfully outputted to Excel
+2022-05-16 19:40:33,892 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): fred.stlouisfed.org:443
+2022-05-16 19:40:34,061 - urllib3.connectionpool - DEBUG - https://fred.stlouisfed.org:443 "GET /series/SOFR HTTP/1.1" 200 20630
+2022-05-16 19:40:34,111 - root - DEBUG - SOFR rate: 0.79%
+2022-05-16 19:40:34,111 - root - DEBUG - OIS Rate: 0.2412076275087216% given overnight rate of 0.79% with 31.81 days to expiration
+2022-05-16 19:40:34,117 - urllib3.connectionpool - DEBUG - https://fred.stlouisfed.org:443 "GET /series/SOFR HTTP/1.1" 200 20630
+2022-05-16 19:40:34,176 - root - DEBUG - SOFR rate: 0.79%
+2022-05-16 19:40:34,176 - root - DEBUG - OIS Rate: 0.025698963293030452% given overnight rate of 0.79% with 10.81 days to expiration
+2022-05-16 19:40:34,283 - ALGO.options_module - DEBUG - Calls for SPGI expiring 2022-05-27 had no data to price options
+2022-05-16 19:40:34,294 - ALGO.options_module - DEBUG - Puts for SPGI expiring 2022-05-27 successfully outputted to Excel
+2022-05-16 19:40:34,296 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): fred.stlouisfed.org:443
+2022-05-16 19:40:34,333 - ALGO.options_module - DEBUG - Calls for DUK expiring 2022-06-17 successfully outputted to Excel
+2022-05-16 19:40:34,340 - ALGO.options_module - DEBUG - Puts for DUK expiring 2022-06-17 successfully outputted to Excel
+2022-05-16 19:40:34,342 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): fred.stlouisfed.org:443
+2022-05-16 19:40:34,465 - ALGO.options_module - DEBUG - Calls for MS expiring 2022-05-20 successfully outputted to Excel
+2022-05-16 19:40:34,474 - ALGO.options_module - DEBUG - Puts for MS expiring 2022-05-20 successfully outputted to Excel
+2022-05-16 19:40:34,476 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): fred.stlouisfed.org:443
+2022-05-16 19:40:34,542 - urllib3.connectionpool - DEBUG - https://fred.stlouisfed.org:443 "GET /series/SOFR HTTP/1.1" 200 20630
+2022-05-16 19:40:34,561 - urllib3.connectionpool - DEBUG - https://fred.stlouisfed.org:443 "GET /series/SOFR HTTP/1.1" 200 20630
+2022-05-16 19:40:34,584 - root - DEBUG - SOFR rate: 0.79%
+2022-05-16 19:40:34,584 - root - DEBUG - OIS Rate: 0.8838813660331901% given overnight rate of 0.79% with 59.81 days to expiration
+2022-05-16 19:40:34,611 - root - DEBUG - SOFR rate: 0.79%
+2022-05-16 19:40:34,612 - root - DEBUG - OIS Rate: 0.0729264508581684% given overnight rate of 0.79% with 17.81 days to expiration
+2022-05-16 19:40:34,685 - urllib3.connectionpool - DEBUG - https://fred.stlouisfed.org:443 "GET /series/SOFR HTTP/1.1" 200 20630
+2022-05-16 19:40:34,698 - ALGO.options_module - DEBUG - Calls for SPGI expiring 2022-06-03 had no data to price options
+2022-05-16 19:40:34,704 - ALGO.options_module - DEBUG - Puts for SPGI expiring 2022-06-03 successfully outputted to Excel
+2022-05-16 19:40:34,706 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): fred.stlouisfed.org:443
+2022-05-16 19:40:34,745 - ALGO.options_module - DEBUG - Calls for DUK expiring 2022-07-15 successfully outputted to Excel
+2022-05-16 19:40:34,750 - ALGO.options_module - DEBUG - Puts for DUK expiring 2022-07-15 successfully outputted to Excel
+2022-05-16 19:40:34,770 - root - DEBUG - SOFR rate: 0.79%
+2022-05-16 19:40:34,770 - root - DEBUG - OIS Rate: 0.025698963293030452% given overnight rate of 0.79% with 10.81 days to expiration
+2022-05-16 19:40:34,911 - root - DEBUG - C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Daily Stock Analysis\Options\DUK Options Data 2022-05-16.xlsx is being formatted
+2022-05-16 19:40:34,947 - urllib3.connectionpool - DEBUG - https://fred.stlouisfed.org:443 "GET /series/SOFR HTTP/1.1" 200 20630
+2022-05-16 19:40:35,013 - root - DEBUG - SOFR rate: 0.79%
+2022-05-16 19:40:35,013 - root - DEBUG - OIS Rate: 0.14463648425140363% given overnight rate of 0.79% with 24.81 days to expiration
+2022-05-16 19:40:35,053 - ALGO.options_module - DEBUG - Calls for SPGI expiring 2022-06-10 had no data to price options
+2022-05-16 19:40:35,053 - ALGO.options_module - DEBUG - Puts for SPGI expiring 2022-06-10 had no data to price options
+2022-05-16 19:40:35,055 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): fred.stlouisfed.org:443
+2022-05-16 19:40:35,256 - urllib3.connectionpool - DEBUG - https://fred.stlouisfed.org:443 "GET /series/SOFR HTTP/1.1" 200 20630
+2022-05-16 19:40:35,305 - root - DEBUG - SOFR rate: 0.79%
+2022-05-16 19:40:35,306 - root - DEBUG - OIS Rate: 0.2412076275087216% given overnight rate of 0.79% with 31.81 days to expiration
+2022-05-16 19:40:35,390 - ALGO.options_module - DEBUG - Calls for MS expiring 2022-05-27 successfully outputted to Excel
+2022-05-16 19:40:35,411 - ALGO.options_module - DEBUG - Puts for MS expiring 2022-05-27 successfully outputted to Excel
+2022-05-16 19:40:35,415 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): fred.stlouisfed.org:443
+2022-05-16 19:40:35,553 - ALGO.options_module - DEBUG - Calls for SPGI expiring 2022-06-17 successfully outputted to Excel
+2022-05-16 19:40:35,568 - ALGO.options_module - DEBUG - Puts for SPGI expiring 2022-06-17 successfully outputted to Excel
+2022-05-16 19:40:35,572 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): fred.stlouisfed.org:443
+2022-05-16 19:40:35,658 - urllib3.connectionpool - DEBUG - https://fred.stlouisfed.org:443 "GET /series/SOFR HTTP/1.1" 200 20630
+2022-05-16 19:40:35,720 - root - DEBUG - SOFR rate: 0.79%
+2022-05-16 19:40:35,720 - root - DEBUG - OIS Rate: 0.0729264508581684% given overnight rate of 0.79% with 17.81 days to expiration
+2022-05-16 19:40:35,834 - root - DEBUG - formatting for C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Daily Stock Analysis\Options\DUK Options Data 2022-05-16.xlsx is finished
+2022-05-16 19:40:35,838 - urllib3.connectionpool - DEBUG - https://fred.stlouisfed.org:443 "GET /series/SOFR HTTP/1.1" 200 20630
+2022-05-16 19:40:35,893 - root - DEBUG - SOFR rate: 0.79%
+2022-05-16 19:40:35,893 - root - DEBUG - OIS Rate: 0.3630242982538112% given overnight rate of 0.79% with 38.81 days to expiration
+2022-05-16 19:40:35,969 - ALGO.options_module - DEBUG - Calls for SPGI expiring 2022-06-24 successfully outputted to Excel
+2022-05-16 19:40:35,969 - ALGO.options_module - DEBUG - Puts for SPGI expiring 2022-06-24 had no data to price options
+2022-05-16 19:40:35,971 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): fred.stlouisfed.org:443
+2022-05-16 19:40:36,141 - ALGO.options_module - DEBUG - Calls for MS expiring 2022-06-03 successfully outputted to Excel
+2022-05-16 19:40:36,148 - ALGO.options_module - DEBUG - Puts for MS expiring 2022-06-03 successfully outputted to Excel
+2022-05-16 19:40:36,150 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): fred.stlouisfed.org:443
+2022-05-16 19:40:36,173 - urllib3.connectionpool - DEBUG - https://fred.stlouisfed.org:443 "GET /series/SOFR HTTP/1.1" 200 20630
+2022-05-16 19:40:36,223 - root - DEBUG - SOFR rate: 0.79%
+2022-05-16 19:40:36,223 - root - DEBUG - OIS Rate: 0.8838813660331901% given overnight rate of 0.79% with 59.81 days to expiration
+2022-05-16 19:40:36,344 - ALGO.options_module - DEBUG - Calls for SPGI expiring 2022-07-15 successfully outputted to Excel
+2022-05-16 19:40:36,350 - ALGO.options_module - DEBUG - Puts for SPGI expiring 2022-07-15 successfully outputted to Excel
+2022-05-16 19:40:36,351 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): fred.stlouisfed.org:443
+2022-05-16 19:40:36,359 - urllib3.connectionpool - DEBUG - https://fred.stlouisfed.org:443 "GET /series/SOFR HTTP/1.1" 200 20630
+2022-05-16 19:40:36,406 - root - DEBUG - SOFR rate: 0.79%
+2022-05-16 19:40:36,406 - root - DEBUG - OIS Rate: 0.14463648425140363% given overnight rate of 0.79% with 24.81 days to expiration
+2022-05-16 19:40:36,575 - urllib3.connectionpool - DEBUG - https://fred.stlouisfed.org:443 "GET /series/SOFR HTTP/1.1" 200 20630
+2022-05-16 19:40:36,638 - root - DEBUG - SOFR rate: 0.79%
+2022-05-16 19:40:36,638 - root - DEBUG - OIS Rate: 2.2945314483451718% given overnight rate of 0.79% with 94.81 days to expiration
+2022-05-16 19:40:36,727 - ALGO.options_module - DEBUG - Calls for SPGI expiring 2022-08-19 successfully outputted to Excel
+2022-05-16 19:40:36,734 - ALGO.options_module - DEBUG - Puts for SPGI expiring 2022-08-19 successfully outputted to Excel
+2022-05-16 19:40:36,796 - ALGO.options_module - DEBUG - Calls for MS expiring 2022-06-10 successfully outputted to Excel
+2022-05-16 19:40:36,801 - ALGO.options_module - DEBUG - Puts for MS expiring 2022-06-10 successfully outputted to Excel
+2022-05-16 19:40:36,803 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): fred.stlouisfed.org:443
+2022-05-16 19:40:37,036 - root - DEBUG - C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Daily Stock Analysis\Options\SPGI Options Data 2022-05-16.xlsx is being formatted
+2022-05-16 19:40:37,090 - urllib3.connectionpool - DEBUG - https://fred.stlouisfed.org:443 "GET /series/SOFR HTTP/1.1" 200 20630
+2022-05-16 19:40:37,166 - root - DEBUG - SOFR rate: 0.79%
+2022-05-16 19:40:37,166 - root - DEBUG - OIS Rate: 0.2412076275087216% given overnight rate of 0.79% with 31.81 days to expiration
+2022-05-16 19:40:37,654 - ALGO.options_module - DEBUG - Calls for MS expiring 2022-06-17 successfully outputted to Excel
+2022-05-16 19:40:37,680 - ALGO.options_module - DEBUG - Puts for MS expiring 2022-06-17 successfully outputted to Excel
+2022-05-16 19:40:37,684 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): fred.stlouisfed.org:443
+2022-05-16 19:40:37,940 - urllib3.connectionpool - DEBUG - https://fred.stlouisfed.org:443 "GET /series/SOFR HTTP/1.1" 200 20630
+2022-05-16 19:40:38,013 - root - DEBUG - SOFR rate: 0.79%
+2022-05-16 19:40:38,013 - root - DEBUG - OIS Rate: 0.3630242982538112% given overnight rate of 0.79% with 38.81 days to expiration
+2022-05-16 19:40:38,353 - ALGO.options_module - DEBUG - Calls for MS expiring 2022-06-24 successfully outputted to Excel
+2022-05-16 19:40:38,360 - ALGO.options_module - DEBUG - Puts for MS expiring 2022-06-24 successfully outputted to Excel
+2022-05-16 19:40:38,362 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): fred.stlouisfed.org:443
+2022-05-16 19:40:38,477 - root - DEBUG - formatting for C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Daily Stock Analysis\Options\SPGI Options Data 2022-05-16.xlsx is finished
+2022-05-16 19:40:38,583 - urllib3.connectionpool - DEBUG - https://fred.stlouisfed.org:443 "GET /series/SOFR HTTP/1.1" 200 20630
+2022-05-16 19:40:38,632 - root - DEBUG - SOFR rate: 0.79%
+2022-05-16 19:40:38,632 - root - DEBUG - OIS Rate: 0.5104768582097963% given overnight rate of 0.79% with 45.81 days to expiration
+2022-05-16 19:40:38,750 - ALGO.options_module - DEBUG - Calls for MS expiring 2022-07-01 successfully outputted to Excel
+2022-05-16 19:40:38,754 - ALGO.options_module - DEBUG - Puts for MS expiring 2022-07-01 successfully outputted to Excel
+2022-05-16 19:40:38,756 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): fred.stlouisfed.org:443
+2022-05-16 19:40:38,972 - urllib3.connectionpool - DEBUG - https://fred.stlouisfed.org:443 "GET /series/SOFR HTTP/1.1" 200 20630
+2022-05-16 19:40:39,014 - root - DEBUG - SOFR rate: 0.79%
+2022-05-16 19:40:39,014 - root - DEBUG - OIS Rate: 0.8838813660331901% given overnight rate of 0.79% with 59.81 days to expiration
+2022-05-16 19:40:39,429 - ALGO.options_module - DEBUG - Calls for MS expiring 2022-07-15 successfully outputted to Excel
+2022-05-16 19:40:39,440 - ALGO.options_module - DEBUG - Puts for MS expiring 2022-07-15 successfully outputted to Excel
+2022-05-16 19:40:39,442 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): fred.stlouisfed.org:443
+2022-05-16 19:40:39,679 - urllib3.connectionpool - DEBUG - https://fred.stlouisfed.org:443 "GET /series/SOFR HTTP/1.1" 200 20630
+2022-05-16 19:40:39,773 - root - DEBUG - SOFR rate: 0.79%
+2022-05-16 19:40:39,773 - root - DEBUG - OIS Rate: 2.2945314483451718% given overnight rate of 0.79% with 94.81 days to expiration
+2022-05-16 19:40:40,041 - ALGO.options_module - DEBUG - Calls for MS expiring 2022-08-19 successfully outputted to Excel
+2022-05-16 19:40:40,046 - ALGO.options_module - DEBUG - Puts for MS expiring 2022-08-19 successfully outputted to Excel
+2022-05-16 19:40:40,572 - root - DEBUG - C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Daily Stock Analysis\Options\MS Options Data 2022-05-16.xlsx is being formatted
+2022-05-16 19:40:42,214 - root - DEBUG - formatting for C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Daily Stock Analysis\Options\MS Options Data 2022-05-16.xlsx is finished
+2022-05-16 19:40:42,216 - root - DEBUG - Options gathering completed
+2022-05-16 19:40:42,217 - root - DEBUG - initial analysis function is entered
+2022-05-16 19:40:42,219 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): query2.finance.yahoo.com:443
+2022-05-16 19:40:42,529 - urllib3.connectionpool - DEBUG - https://query2.finance.yahoo.com:443 "GET /v7/finance/options/DUK?getAllData=true&formatted=false&lang=en-US&region=US&corsDomain=finance.yahoo.com HTTP/1.1" 200 None
+2022-05-16 19:40:42,595 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): query2.finance.yahoo.com:443
+2022-05-16 19:40:42,981 - urllib3.connectionpool - DEBUG - https://query2.finance.yahoo.com:443 "GET /v7/finance/options/SPGI?getAllData=true&formatted=false&lang=en-US&region=US&corsDomain=finance.yahoo.com HTTP/1.1" 200 None
+2022-05-16 19:40:43,129 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): query2.finance.yahoo.com:443
+2022-05-16 19:40:43,535 - urllib3.connectionpool - DEBUG - https://query2.finance.yahoo.com:443 "GET /v7/finance/options/MS?getAllData=true&formatted=false&lang=en-US&region=US&corsDomain=finance.yahoo.com HTTP/1.1" 200 None
+2022-05-16 19:40:43,705 - root - WARNING - Warning, one hour to market close, reducing maximum position size to 25%
+
+2022-05-16 19:40:44,088 - root - DEBUG - Table trades_UPS dropped in trades.db
+2022-05-16 19:40:44,092 - root - DEBUG - Table trades_FAST dropped in trades.db
+2022-05-16 19:40:44,095 - root - DEBUG - Table trades_KMX dropped in trades.db
+2022-05-16 19:40:44,100 - root - DEBUG - Table trades_DUK created in trades.db
+2022-05-16 19:40:44,104 - root - DEBUG - Table trades_SPGI created in trades.db
+2022-05-16 19:40:44,109 - root - DEBUG - Table trades_MS created in trades.db
+2022-05-16 19:40:44,114 - root - DEBUG - table initial_quote_UPS dropped in quotes.db
+2022-05-16 19:40:44,118 - root - DEBUG - table initial_quote_FAST dropped in quotes.db
+2022-05-16 19:40:44,122 - root - DEBUG - table initial_quote_KMX dropped in quotes.db
+2022-05-16 19:40:44,126 - root - DEBUG - table quotes_UPS dropped in quotes.db
+2022-05-16 19:40:44,129 - root - DEBUG - table quotes_FAST dropped in quotes.db
+2022-05-16 19:40:44,133 - root - DEBUG - table quotes_KMX dropped in quotes.db
+2022-05-16 19:40:44,142 - root - DEBUG - table quotes_DUK added in quotes.db
+2022-05-16 19:40:44,146 - root - DEBUG - table quotes_SPGI added in quotes.db
+2022-05-16 19:40:44,150 - root - DEBUG - table quotes_MS added in quotes.db
+2022-05-16 19:40:44,153 - root - DEBUG - table indicators_UPS dropped in indicators.db
+2022-05-16 19:40:44,157 - root - DEBUG - table indicators_FAST dropped in indicators.db
+2022-05-16 19:40:44,161 - root - DEBUG - table indicators_KMX dropped in indicators.db
+2022-05-16 19:40:44,166 - root - DEBUG - table indicators_DUK created in indicators.db
+2022-05-16 19:40:44,170 - root - DEBUG - table indicators_SPGI created in indicators.db
+2022-05-16 19:40:44,174 - root - DEBUG - table indicators_MS created in indicators.db
+2022-05-16 19:40:44,175 - root - DEBUG - DATABASE INTEGRITY CHECK FOR C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Databases\accounts.db: ok
+2022-05-16 19:40:44,176 - root - DEBUG - DATABASE INTEGRITY CHECK FOR C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Databases\indicators.db: ok
+2022-05-16 19:40:44,178 - root - DEBUG - DATABASE INTEGRITY CHECK FOR C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Databases\options.db: ok
+2022-05-16 19:40:44,179 - root - DEBUG - DATABASE INTEGRITY CHECK FOR C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Databases\positions.db: ok
+2022-05-16 19:40:44,179 - root - DEBUG - DATABASE INTEGRITY CHECK FOR C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Databases\quotes.db: ok
+2022-05-16 19:40:44,180 - root - DEBUG - DATABASE INTEGRITY CHECK FOR C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Databases\trades.db: ok
+2022-05-16 19:40:47,355 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): query2.finance.yahoo.com:443
+2022-05-16 19:40:47,355 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): query2.finance.yahoo.com:443
+2022-05-16 19:40:47,357 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): query2.finance.yahoo.com:443
+2022-05-16 19:40:47,494 - urllib3.connectionpool - DEBUG - https://query2.finance.yahoo.com:443 "GET /v8/finance/chart/MS?range=1d&interval=1m&includePrePost=True&events=div%2Csplits HTTP/1.1" 200 None
+2022-05-16 19:40:47,503 - urllib3.connectionpool - DEBUG - https://query2.finance.yahoo.com:443 "GET /v8/finance/chart/SPGI?range=1d&interval=1m&includePrePost=True&events=div%2Csplits HTTP/1.1" 200 None
+2022-05-16 19:40:47,524 - urllib3.connectionpool - DEBUG - https://query2.finance.yahoo.com:443 "GET /v8/finance/chart/DUK?range=1d&interval=1m&includePrePost=True&events=div%2Csplits HTTP/1.1" 200 None
+2022-05-16 19:40:47,838 - root - DEBUG - C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Daily Stock Analysis\Trades\DUK Intraday 2022-05-16.xlsx is being formatted
+2022-05-16 19:40:48,724 - root - DEBUG - formatting for C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Daily Stock Analysis\Trades\DUK Intraday 2022-05-16.xlsx is finished
+2022-05-16 19:40:49,060 - root - DEBUG - C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Daily Stock Analysis\Trades\SPGI Intraday 2022-05-16.xlsx is being formatted
+2022-05-16 19:40:49,882 - root - DEBUG - formatting for C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Daily Stock Analysis\Trades\SPGI Intraday 2022-05-16.xlsx is finished
+2022-05-16 19:40:50,345 - root - DEBUG - C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Daily Stock Analysis\Trades\MS Intraday 2022-05-16.xlsx is being formatted
+2022-05-16 19:40:51,253 - root - DEBUG - formatting for C:\Users\fabio\PycharmProjects\AlgoTrader\ALGO\Daily Stock Analysis\Trades\MS Intraday 2022-05-16.xlsx is finished
+2022-05-16 19:40:51,253 - root - DEBUG - Trade data saved to DB
+2022-05-16 19:40:51,280 - root - DEBUG - Quote data saved to DB
+2022-05-16 19:40:51,308 - root - DEBUG - Indicator data saved to DB
+2022-05-16 19:40:51,309 - root - DEBUG - entering experimental trade analysis function (as of 2/14/2022)
+2022-05-16 19:40:51,313 - root - DEBUG - Entering options analysis function (untested as of 2/14/2022)
+2022-05-16 19:40:51,317 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): query2.finance.yahoo.com:443
+2022-05-16 19:40:51,556 - urllib3.connectionpool - DEBUG - https://query2.finance.yahoo.com:443 "GET /v7/finance/options/DUK?getAllData=true&formatted=false&lang=en-US&region=US&corsDomain=finance.yahoo.com HTTP/1.1" 200 None
+2022-05-16 19:40:51,621 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): query2.finance.yahoo.com:443
+2022-05-16 19:40:52,087 - urllib3.connectionpool - DEBUG - https://query2.finance.yahoo.com:443 "GET /v7/finance/options/SPGI?getAllData=true&formatted=false&lang=en-US&region=US&corsDomain=finance.yahoo.com HTTP/1.1" 200 None
+2022-05-16 19:40:52,194 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): query2.finance.yahoo.com:443
+2022-05-16 19:40:52,656 - urllib3.connectionpool - DEBUG - https://query2.finance.yahoo.com:443 "GET /v7/finance/options/MS?getAllData=true&formatted=false&lang=en-US&region=US&corsDomain=finance.yahoo.com HTTP/1.1" 200 None
+2022-05-16 19:40:52,807 - root - DEBUG - Exiting experimental options update function
+2022-05-16 19:40:52,809 - root - DEBUG - trades_DUK cleaned in trades.db due to 30 minutes having elapsed
+2022-05-16 19:40:52,810 - root - DEBUG - trades_SPGI cleaned in trades.db due to 30 minutes having elapsed
+2022-05-16 19:40:52,810 - root - DEBUG - trades_MS cleaned in trades.db due to 30 minutes having elapsed
+2022-05-16 19:40:52,817 - root - DEBUG - table quotes_DUK cleaned in quotes.db due to 1 hour having elapsed
+2022-05-16 19:40:52,818 - root - DEBUG - table quotes_SPGI cleaned in quotes.db due to 1 hour having elapsed
+2022-05-16 19:40:52,818 - root - DEBUG - table quotes_MS cleaned in quotes.db due to 1 hour having elapsed
+2022-05-16 19:40:52,823 - root - DEBUG - table indicators_DUK cleaned in quotes.db due to 1 hour having elapsed
+2022-05-16 19:40:52,824 - root - DEBUG - table indicators_SPGI cleaned in quotes.db due to 1 hour having elapsed
+2022-05-16 19:40:52,824 - root - DEBUG - table indicators_MS cleaned in quotes.db due to 1 hour having elapsed

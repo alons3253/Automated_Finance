@@ -7,9 +7,11 @@ logger = logging.getLogger(__name__)
 
 
 class WebsocketBootStrapper:
-    def __init__(self, stock_tickers=None, trade_data=None, token=None):
-        self.token = token
-        self.socket = websocket.WebSocketApp("wss://ws.finnhub.io?token={}".format(self.token),
+    def __init__(self, stock_tickers=None, trade_data=None, token=None, apca_api=None, apca_sec_key=None):
+        self.apca_api_key = apca_api
+        self.apca_api_sec_key = apca_sec_key
+
+        self.socket = websocket.WebSocketApp("wss://ws.finnhub.io?token={}".format(token),
                                              on_message=self.on_message, on_error=self.on_error, on_close=self.on_close)
         self.socket.on_open = self.on_open
         self.stock_tickers = stock_tickers
@@ -30,10 +32,8 @@ class WebsocketBootStrapper:
             return
         data = loads(message)
         stock_fundamentals = data['data'][0]
-        time_integer = stock_fundamentals['t']
-        timestamp = dt.datetime.fromtimestamp(time_integer / 1e3)
-        timestamp = str("{}.{:03d}".format(timestamp.strftime('%Y-%m-%d %H:%M:%S'), timestamp.microsecond // 1000))
-        stock_fundamentals['t'] = timestamp
+        stock_fundamentals['t'] = dt.datetime.fromtimestamp(stock_fundamentals['t'] /
+                                                            1e3).strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
         s = stock_fundamentals['s']
         stock_fundamentals['time'] = stock_fundamentals.pop('t')
         stock_fundamentals['price'] = stock_fundamentals.pop('p')
@@ -50,6 +50,6 @@ class WebsocketBootStrapper:
 
     def on_open(self, ws):
         for stock_ticker in self.stock_tickers:
-            custom_call = str('{"type":"subscribe","symbol":"') + stock_ticker + str('"}')
+            custom_call = f'{{"type":"subscribe","symbol":"{stock_ticker}"}}'
             print(custom_call)
             ws.send(custom_call)

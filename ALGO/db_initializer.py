@@ -291,16 +291,10 @@ class databaseInitializer:
     def cleanup_of_indicators_database(self, file):
         with sqlite3.connect(self.path + file) as db:
             for stock in self.stock_tickers:
-                cur = db.execute(f"select rowid, * from indicators_{stock}")
-                for row in cur.fetchall():
-                    time = dt.datetime.strptime(row[1], '%Y-%m-%d %H:%M:%S')
-                    difference = dt.datetime.now() - time
-                    # delete indicators from 1 hour ago
-                    if difference.total_seconds() > 3600:
-                        db.execute(f"delete from indicators_{stock} where rowid = (?)", (row[0],))
-                        db.commit()
-                        logging.debug(f"table indicators_{stock} dropped in indicators.db due to "
-                                      f"{difference} having elapsed")
+                db.execute(f"delete from indicators_{stock} where time < (?)",
+                           ((dt.datetime.now() - dt.timedelta(minutes=60)),))
+                db.commit()
+                logging.debug(f"table indicators_{stock} cleaned in quotes.db due to 1 hour having elapsed")
             db.execute("vacuum")
             db.commit()
 
